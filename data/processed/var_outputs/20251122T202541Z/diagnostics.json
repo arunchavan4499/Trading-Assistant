@@ -1,0 +1,26 @@
+{
+  "input_symbols": [
+    "AAPL",
+    "MSFT"
+  ],
+  "n_input_obs": 4,
+  "original_assets": [
+    "AAPL",
+    "MSFT"
+  ],
+  "dropped_assets": [],
+  "n_obs_original": 4,
+  "timestamp": 1763843141,
+  "n_obs": 4,
+  "n_assets": 2,
+  "cond_XtX": 5.41955067190556,
+  "used_ridge_lambda": 0.1,
+  "eigenvalues": [
+    -0.9836174785580893,
+    0.395445873981812
+  ],
+  "asset_order": [
+    "AAPL",
+    "MSFT"
+  ]
+}
