@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.vscode/
+node_modules/
+.env
+.DS_Store
+package-lock.json
+npm-debug.log
+result*/
+results/
+app.db
