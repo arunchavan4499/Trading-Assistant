@@ -31,8 +31,8 @@ export default function Risk() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Risk Management</h1>
-        <p className="text-muted-foreground">Monitor portfolio risk and exposure limits</p>
+        <h1 className="font-clash text-3xl font-bold text-slate-900 dark:text-white">Risk Management</h1>
+        <p className="text-slate-500 dark:text-slate-400">Monitor portfolio risk and exposure limits</p>
       </div>
 
       {/* Risk Status */}
@@ -50,8 +50,8 @@ export default function Risk() {
         </CardHeader>
         {!riskStatus?.is_safe && riskStatus?.message && (
           <CardContent>
-            <div className="p-4 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-red-800 dark:text-red-200">{riskStatus.message}</p>
+            <div className="p-4 bg-red-900/30 border border-red-700 rounded-lg">
+              <p className="text-red-200">{riskStatus.message}</p>
             </div>
           </CardContent>
         )}
@@ -59,41 +59,41 @@ export default function Risk() {
 
       {/* Action Controls When Breach Detected */}
       {!riskStatus?.is_safe && (
-        <Card className="border-orange-500 bg-orange-50 dark:bg-orange-950">
+        <Card className="border-orange-600/50 bg-orange-950/30">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-orange-900 dark:text-orange-100">
+            <CardTitle className="flex items-center gap-2 text-orange-200">
               <AlertCircle className="h-5 w-5" />
               Take Action to Control Risk
             </CardTitle>
-            <CardDescription className="text-orange-800 dark:text-orange-200">
+            <CardDescription className="text-orange-300">
               Choose one of the following options to resolve the breach
             </CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {/* Action 1: Reduce Position Sizes */}
-              <div className="border border-orange-200 dark:border-orange-800 rounded-lg p-4 hover:bg-orange-100 dark:hover:bg-orange-900 transition cursor-pointer" 
-                   onClick={() => setExpandedAction(expandedAction === 'reduce' ? null : 'reduce')}>
+              <div className="border border-orange-700 rounded-lg p-4 hover:bg-orange-900/30 transition cursor-pointer"
+                onClick={() => setExpandedAction(expandedAction === 'reduce' ? null : 'reduce')}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <TrendingDown className="h-5 w-5 text-orange-600" />
+                    <TrendingDown className="h-5 w-5 text-orange-400" />
                     <div>
-                      <p className="font-semibold text-orange-900 dark:text-orange-100">1. Reduce Oversized Positions</p>
-                      <p className="text-sm text-orange-800 dark:text-orange-200">Sell assets that exceed max allocation</p>
+                      <p className="font-semibold text-orange-100">1. Reduce Oversized Positions</p>
+                      <p className="text-sm text-orange-300">Sell assets that exceed max allocation</p>
                     </div>
                   </div>
-                  <div className="text-orange-600">→</div>
+                  <div className="text-orange-400">→</div>
                 </div>
                 {expandedAction === 'reduce' && (
-                  <div className="mt-3 pt-3 border-t border-orange-200 dark:border-orange-800">
-                    <p className="text-sm mb-2 text-orange-900 dark:text-orange-100">Positions to reduce:</p>
+                  <div className="mt-3 pt-3 border-t border-orange-700">
+                    <p className="text-sm mb-2 text-orange-100">Positions to reduce:</p>
                     {riskStatus?.position_limits && Object.entries(riskStatus.position_limits).map(([symbol, limit]) => {
                       const exposure = (limit as any).current || 0;
                       const maxExposure = (limit as any).max || 0.3;
                       if (exposure > maxExposure * 0.85) {
                         const toReduce = ((exposure - maxExposure * 0.8) * 100).toFixed(2);
                         return (
-                          <div key={symbol} className="text-sm text-orange-800 dark:text-orange-200 ml-4">
+                          <div key={symbol} className="text-sm text-orange-200 ml-4">
                             • Sell {toReduce}% of {symbol} (currently {(exposure * 100).toFixed(1)}%)
                           </div>
                         );
@@ -105,26 +105,26 @@ export default function Risk() {
               </div>
 
               {/* Action 2: Increase Drawdown Limit */}
-              <div className="border border-orange-200 dark:border-orange-800 rounded-lg p-4 hover:bg-orange-100 dark:hover:bg-orange-900 transition cursor-pointer"
-                   onClick={() => setExpandedAction(expandedAction === 'limit' ? null : 'limit')}>
+              <div className="border border-orange-700 rounded-lg p-4 hover:bg-orange-900/30 transition cursor-pointer"
+                onClick={() => setExpandedAction(expandedAction === 'limit' ? null : 'limit')}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Lock className="h-5 w-5 text-orange-600" />
+                    <Lock className="h-5 w-5 text-orange-400" />
                     <div>
-                      <p className="font-semibold text-orange-900 dark:text-orange-100">2. Adjust Risk Limits</p>
-                      <p className="text-sm text-orange-800 dark:text-orange-200">Increase position size or drawdown limits</p>
+                      <p className="font-semibold text-orange-100">2. Adjust Risk Limits</p>
+                      <p className="text-sm text-orange-300">Increase position size or drawdown limits</p>
                     </div>
                   </div>
-                  <div className="text-orange-600">→</div>
+                  <div className="text-orange-400">→</div>
                 </div>
                 {expandedAction === 'limit' && (
-                  <div className="mt-3 pt-3 border-t border-orange-200 dark:border-orange-800 space-y-2">
-                    <div className="text-sm font-semibold text-orange-900 dark:text-orange-100">Current Limits:</div>
-                    <div className="text-sm text-orange-800 dark:text-orange-200 ml-4 space-y-1">
+                  <div className="mt-3 pt-3 border-t border-orange-700 space-y-2">
+                    <div className="text-sm font-semibold text-orange-100">Current Limits:</div>
+                    <div className="text-sm text-orange-200 ml-4 space-y-1">
                       <div>• Max Position Size: 20% → Consider increasing to 25-30%</div>
                       <div>• Max Drawdown: {((riskStatus?.drawdown_limit ?? 0.2) * 100).toFixed(1)}% → Consider increasing by 5-10%</div>
                     </div>
-                    <p className="text-sm mt-2 text-orange-700 dark:text-orange-300">
+                    <p className="text-sm mt-2 text-orange-300">
                       Go to <a href="/settings" className="font-semibold underline">Settings</a> to adjust these limits
                     </p>
                   </div>
@@ -132,24 +132,24 @@ export default function Risk() {
               </div>
 
               {/* Action 3: Diversify Portfolio */}
-              <div className="border border-orange-200 dark:border-orange-800 rounded-lg p-4 hover:bg-orange-100 dark:hover:bg-orange-900 transition cursor-pointer"
-                   onClick={() => setExpandedAction(expandedAction === 'diversify' ? null : 'diversify')}>
+              <div className="border border-orange-700 rounded-lg p-4 hover:bg-orange-900/30 transition cursor-pointer"
+                onClick={() => setExpandedAction(expandedAction === 'diversify' ? null : 'diversify')}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <TrendingUp className="h-5 w-5 text-orange-600" />
+                    <TrendingUp className="h-5 w-5 text-orange-400" />
                     <div>
-                      <p className="font-semibold text-orange-900 dark:text-orange-100">3. Diversify Holdings</p>
-                      <p className="text-sm text-orange-800 dark:text-orange-200">Add more assets to spread risk</p>
+                      <p className="font-semibold text-orange-100">3. Diversify Holdings</p>
+                      <p className="text-sm text-orange-300">Add more assets to spread risk</p>
                     </div>
                   </div>
-                  <div className="text-orange-600">→</div>
+                  <div className="text-orange-400">→</div>
                 </div>
                 {expandedAction === 'diversify' && (
-                  <div className="mt-3 pt-3 border-t border-orange-200 dark:border-orange-800">
-                    <p className="text-sm text-orange-800 dark:text-orange-200 mb-2">
+                  <div className="mt-3 pt-3 border-t border-orange-700">
+                    <p className="text-sm text-orange-200 mb-2">
                       Current portfolio holds {riskStatus?.position_limits ? Object.keys(riskStatus.position_limits).length : 0} assets.
                     </p>
-                    <ul className="text-sm text-orange-800 dark:text-orange-200 ml-4 space-y-1">
+                    <ul className="text-sm text-orange-200 ml-4 space-y-1">
                       <li>• Add 2-3 uncorrelated assets</li>
                       <li>• Consider different sectors</li>
                       <li>• Rebalance to equal-weight allocation</li>
@@ -159,21 +159,21 @@ export default function Risk() {
               </div>
 
               {/* Action 4: Stop & Review */}
-              <div className="border border-orange-200 dark:border-orange-800 rounded-lg p-4 hover:bg-orange-100 dark:hover:bg-orange-900 transition cursor-pointer"
-                   onClick={() => setExpandedAction(expandedAction === 'stop' ? null : 'stop')}>
+              <div className="border border-orange-700 rounded-lg p-4 hover:bg-orange-900/30 transition cursor-pointer"
+                onClick={() => setExpandedAction(expandedAction === 'stop' ? null : 'stop')}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <Settings className="h-5 w-5 text-orange-600" />
+                    <Settings className="h-5 w-5 text-orange-400" />
                     <div>
-                      <p className="font-semibold text-orange-900 dark:text-orange-100">4. Pause & Review Strategy</p>
-                      <p className="text-sm text-orange-800 dark:text-orange-200">Stop trading and assess portfolio</p>
+                      <p className="font-semibold text-orange-100">4. Pause & Review Strategy</p>
+                      <p className="text-sm text-orange-300">Stop trading and assess portfolio</p>
                     </div>
                   </div>
-                  <div className="text-orange-600">→</div>
+                  <div className="text-orange-400">→</div>
                 </div>
                 {expandedAction === 'stop' && (
-                  <div className="mt-3 pt-3 border-t border-orange-200 dark:border-orange-800">
-                    <div className="text-sm text-orange-800 dark:text-orange-200 space-y-2">
+                  <div className="mt-3 pt-3 border-t border-orange-700">
+                    <div className="text-sm text-orange-200 space-y-2">
                       <p className="font-semibold">Consider:</p>
                       <ul className="ml-4 space-y-1">
                         <li>✓ Review your trading signals</li>
@@ -200,21 +200,21 @@ export default function Risk() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <p className="text-sm text-muted-foreground">Current Drawdown</p>
-              <p className="text-3xl font-bold text-red-600">{Math.abs(drawdownPct).toFixed(2)}%</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Current Drawdown</p>
+              <p className="text-3xl font-clash font-bold text-red-500 dark:text-red-400">{Math.abs(drawdownPct).toFixed(2)}%</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Drawdown Limit</p>
-              <p className="text-3xl font-bold">{limitPct.toFixed(2)}%</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Drawdown Limit</p>
+              <p className="text-3xl font-clash font-bold text-slate-800 dark:text-slate-100">{limitPct.toFixed(2)}%</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Utilization</p>
-              <p className="text-3xl font-bold">{(drawdownRatio * 100).toFixed(0)}%</p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">Utilization</p>
+              <p className="text-3xl font-clash font-bold text-slate-800 dark:text-slate-100">{(drawdownRatio * 100).toFixed(0)}%</p>
             </div>
           </div>
 
           {/* Progress Bar */}
-          <div className="relative w-full h-8 bg-secondary rounded-lg overflow-hidden">
+          <div className="relative w-full h-8 bg-slate-200 rounded-lg overflow-hidden dark:bg-white/5">
             <div
               className={`h-full transition-all ${getDrawdownColor()}`}
               style={{ width: `${Math.min(drawdownRatio * 100, 100)}%` }}
@@ -241,12 +241,12 @@ export default function Risk() {
                 return (
                   <div key={symbol}>
                     <div className="flex justify-between mb-1">
-                      <span className="font-medium">{symbol}</span>
-                      <span className="text-sm text-muted-foreground">
+                      <span className="font-medium text-slate-900 dark:text-slate-100">{symbol}</span>
+                      <span className="text-sm text-slate-500 dark:text-slate-400">
                         {(exposure * 100).toFixed(1)}% / {(maxExposure * 100).toFixed(0)}% max
                       </span>
                     </div>
-                    <div className="w-full h-2 bg-secondary rounded overflow-hidden">
+                    <div className="w-full h-2 bg-slate-200 rounded overflow-hidden dark:bg-white/5">
                       <div
                         className={`h-full ${ratio < 0.8 ? 'bg-green-500' : 'bg-yellow-500'}`}
                         style={{ width: `${Math.min(ratio * 100, 100)}%` }}
@@ -256,7 +256,7 @@ export default function Risk() {
                 );
               })
             ) : (
-              <p className="text-sm text-muted-foreground">No positions currently held</p>
+              <p className="text-sm text-slate-400">No positions currently held</p>
             )}
           </div>
         </CardContent>
@@ -270,34 +270,34 @@ export default function Risk() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="flex justify-between border-b pb-2">
-              <span className="text-sm">Max Drawdown Limit</span>
-              <span className="font-medium">
-                {riskLimits?.max_drawdown 
-                  ? (riskLimits.max_drawdown * 100).toFixed(2) 
+            <div className="flex justify-between border-b border-slate-200 pb-2 dark:border-white/10">
+              <span className="text-sm text-slate-600 dark:text-slate-300">Max Drawdown Limit</span>
+              <span className="font-medium text-slate-900 dark:text-slate-100">
+                {riskLimits?.max_drawdown
+                  ? (riskLimits.max_drawdown * 100).toFixed(2)
                   : '20.00'}%
               </span>
             </div>
-            <div className="flex justify-between border-b pb-2">
-              <span className="text-sm">Max Position Size</span>
-              <span className="font-medium">
+            <div className="flex justify-between border-b border-slate-200 pb-2 dark:border-white/10">
+              <span className="text-sm text-slate-600 dark:text-slate-300">Max Position Size</span>
+              <span className="font-medium text-slate-900 dark:text-slate-100">
                 {riskLimits?.max_position_fraction
                   ? (riskLimits.max_position_fraction * 100).toFixed(2)
                   : '20.00'}%
               </span>
             </div>
-            <div className="flex justify-between border-b pb-2">
-              <span className="text-sm">Max Assets in Portfolio</span>
-              <span className="font-medium">{riskLimits?.max_assets || 15}</span>
+            <div className="flex justify-between border-b border-slate-200 pb-2 dark:border-white/10">
+              <span className="text-sm text-slate-600 dark:text-slate-300">Max Assets in Portfolio</span>
+              <span className="font-medium text-slate-900 dark:text-slate-100">{riskLimits?.max_assets || 15}</span>
             </div>
-            <div className="flex justify-between border-b pb-2">
-              <span className="text-sm">Risk Check Interval</span>
-              <span className="font-medium">30 seconds</span>
+            <div className="flex justify-between border-b border-slate-200 pb-2 dark:border-white/10">
+              <span className="text-sm text-slate-600 dark:text-slate-300">Risk Check Interval</span>
+              <span className="font-medium text-slate-900 dark:text-slate-100">30 seconds</span>
             </div>
             <div className="mt-4">
-              <a 
-                href="/settings" 
-                className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+              <a
+                href="/settings"
+                className="text-sm text-sky-400 hover:underline"
               >
                 Edit limits in Settings →
               </a>

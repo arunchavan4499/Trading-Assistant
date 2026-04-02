@@ -1,6 +1,6 @@
 import { apiClient } from './client';
 import { unwrapApiResponse } from './utils';
-import type { OHLCVResponse } from '@/types';
+import type { OHLCVResponse, SymbolSuggestion } from '@/types';
 
 export interface FetchOHLCVParams {
   symbols: string[];
@@ -38,4 +38,12 @@ export const getAvailableSymbols = async (): Promise<string[]> => {
   const response = await apiClient.get('/data/symbols');
   const data = unwrapApiResponse<{ symbols: string[] }>(response.data);
   return data.symbols ?? [];
+};
+
+export const searchSymbols = async (query: string, limit = 8): Promise<SymbolSuggestion[]> => {
+  const response = await apiClient.get('/data/search', {
+    params: { query, limit },
+  });
+  const data = unwrapApiResponse<{ suggestions: SymbolSuggestion[] }>(response.data);
+  return data.suggestions ?? [];
 };

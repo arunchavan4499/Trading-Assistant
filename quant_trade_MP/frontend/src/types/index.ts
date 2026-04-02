@@ -19,6 +19,16 @@ export interface OHLCVResponse {
   record_count: Record<string, number>;
 }
 
+export interface SymbolSuggestion {
+  symbol: string;
+  ticker?: string;
+  name?: string;
+  exchange?: string;
+  type?: string;
+  sector?: string;
+  score?: number;
+}
+
 // Feature Types
 export interface FeatureData {
   date: string;
@@ -71,6 +81,8 @@ export interface PortfolioRun {
   method: string;
   metrics: PortfolioMetrics;
   created_at: string;
+  current_equity?: number;
+  peak_equity?: number;
 }
 
 export interface ConstructPortfolioRequest {
@@ -130,6 +142,8 @@ export interface GenerateRebalanceRequest {
   prices: Record<string, number>;
   cash?: number;
   capital?: number;
+  current_equity?: number;
+  peak_equity?: number;
 }
 
 // Backtest Types

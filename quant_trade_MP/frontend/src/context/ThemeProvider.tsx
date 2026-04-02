@@ -26,9 +26,15 @@ export function ThemeProvider({
   storageKey = 'quant-ui-theme',
   ...props
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem(storageKey) as Theme) || defaultTheme
-  );
+  const [theme, setTheme] = useState<Theme>(() => {
+    const stored = localStorage.getItem(storageKey) as Theme;
+    // If no stored theme, use defaultTheme and persist it
+    if (!stored) {
+      localStorage.setItem(storageKey, defaultTheme);
+      return defaultTheme;
+    }
+    return stored;
+  });
 
   useEffect(() => {
     const root = window.document.documentElement;

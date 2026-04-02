@@ -1,10 +1,10 @@
 # Core numerical and data libraries
-numpy>=1.26,<2.0
-pandas>=2.0,<2.2
-scipy>=1.11,<1.13
+numpy>=2.0,<3.0
+pandas>=2.2,<2.3
+scipy>=1.13,<1.14
 
 # Machine learning / preprocessing
-scikit-learn>=1.3,<1.5
+scikit-learn>=1.5,<1.6
 
 # Time-series data source
 yfinance>=0.2.30,<0.3.0
@@ -12,13 +12,16 @@ yfinance>=0.2.30,<0.3.0
 # Database & ORM
 SQLAlchemy>=2.0,<2.1
 psycopg2-binary>=2.9,<2.10
+requests>=2.31,<2.33
+pgvector>=0.2.4,<0.3.0
+sentence-transformers>=2.5.1,<3.0.0
 
 # Configuration & validation (Pydantic v2)
-pydantic>=2.4,<2.8
-pydantic-settings>=2.0,<2.2
+pydantic>=2.8,<2.9
+pydantic-settings>=2.2,<2.3
 
 # Parquet support for pandas feature persistence
-pyarrow>=14.0,<15.0
+pyarrow>=16.0,<17.0
 
 # Optional (uncomment if needed for local dev tooling)
 # python-dotenv>=1.0,<2.0

@@ -15,18 +15,19 @@ export function CustomLineChart({ data, lines, height = 300 }: LineChartProps) {
   return (
     <ResponsiveContainer width="100%" height={height}>
       <LineChart data={data}>
-        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.6} />
-        <XAxis dataKey="date" className="text-xs" />
-        <YAxis className="text-xs" />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" opacity={0.6} />
+        <XAxis dataKey="date" className="text-xs" tick={{ fill: '#94a3b8' }} />
+        <YAxis className="text-xs" tick={{ fill: '#94a3b8' }} />
         <Tooltip
           contentStyle={{
-            backgroundColor: 'hsl(var(--popover))',
-            border: '1px solid hsl(var(--border))',
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            border: '1px solid rgba(255,255,255,0.1)',
             borderRadius: 12,
             padding: 10,
+            color: '#e2e8f0',
           }}
         />
-        <Legend />
+        <Legend wrapperStyle={{ color: '#94a3b8' }} />
         {lines.map((line) => (
           <Line key={line.key} type="monotone" dataKey={line.key} stroke={line.color} name={line.name} />
         ))}

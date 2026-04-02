@@ -15,22 +15,22 @@ export function SignalCard({ signal, deviation, currentValue, targetValue, messa
   const getSignalColor = () => {
     switch (signal) {
       case SignalType.BUY:
-        return 'bg-green-100 dark:bg-green-900/20 border-green-500';
+        return 'bg-green-900/30 border-green-500';
       case SignalType.SELL:
-        return 'bg-red-100 dark:bg-red-900/20 border-red-500';
+        return 'bg-red-900/30 border-red-500';
       default:
-        return 'bg-gray-100 dark:bg-gray-900/20 border-gray-500';
+        return 'bg-slate-800/30 border-slate-500';
     }
   };
 
   const getSignalIcon = () => {
     switch (signal) {
       case SignalType.BUY:
-        return <TrendingUp className="h-6 w-6 text-green-600" />;
+        return <TrendingUp className="h-6 w-6 text-green-400" />;
       case SignalType.SELL:
-        return <TrendingDown className="h-6 w-6 text-red-600" />;
+        return <TrendingDown className="h-6 w-6 text-red-400" />;
       default:
-        return <Minus className="h-6 w-6 text-gray-600" />;
+        return <Minus className="h-6 w-6 text-slate-400" />;
     }
   };
 
@@ -46,16 +46,16 @@ export function SignalCard({ signal, deviation, currentValue, targetValue, messa
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <p className="text-sm text-muted-foreground">Current Value</p>
-            <p className="text-lg font-semibold">${currentValue.toLocaleString()}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Current Value</p>
+            <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">${currentValue.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-sm text-muted-foreground">Target Value</p>
-            <p className="text-lg font-semibold">${targetValue.toLocaleString()}</p>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Target Value</p>
+            <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">${targetValue.toLocaleString()}</p>
           </div>
           <div className="col-span-2">
-            <p className="text-sm text-muted-foreground">Deviation</p>
-            <p className={cn('text-lg font-semibold', deviation > 0 ? 'text-red-600' : 'text-green-600')}>
+            <p className="text-sm text-slate-500 dark:text-slate-400">Deviation</p>
+            <p className={cn('text-lg font-semibold', deviation > 0 ? 'text-red-400' : 'text-green-400')}>
               {(deviation * 100).toFixed(2)}%
             </p>
           </div>

@@ -5,7 +5,7 @@ Defines contract between frontend and backend.
 
 from typing import Any, Dict, List, Optional, Literal
 from datetime import datetime
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, model_validator
 
 
 # ============================================================================
@@ -45,6 +45,26 @@ class DataSummary(BaseModel):
     coverage: Dict[str, Dict[str, str]]  # {symbol: {start_date, end_date, record_count}}
     total_symbols: int
     date_range: Dict[str, str]
+
+
+class SymbolInfo(BaseModel):
+    """Symbol metadata used for autocomplete/search."""
+    symbol: str
+    ticker: Optional[str] = None
+    name: Optional[str] = None
+    exchange: Optional[str] = None
+    asset_type: Optional[str] = Field(default=None, alias="type")
+    sector: Optional[str] = None
+    score: Optional[float] = None
+
+    class Config:
+        populate_by_name = True
+
+    @model_validator(mode="after")
+    def _ensure_ticker(cls, values: "SymbolInfo") -> "SymbolInfo":
+        if not values.ticker:
+            values.ticker = values.symbol
+        return values
 
 
 # ============================================================================

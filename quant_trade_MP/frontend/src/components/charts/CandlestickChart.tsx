@@ -52,7 +52,7 @@ export function CandlestickChart({ data, height = 400 }: CandlestickChartProps) 
 
   if (cleaned.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[${height}px] text-sm text-muted-foreground">
+      <div className="flex items-center justify-center h-[${height}px] text-sm text-slate-400">
         No valid price data to display.
       </div>
     );
@@ -71,16 +71,16 @@ export function CandlestickChart({ data, height = 400 }: CandlestickChartProps) 
   return (
     <ResponsiveContainer width="100%" height={height}>
       <ComposedChart data={chartData} margin={{ top: 10, right: 20, left: 0, bottom: 0 }}>
-        <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
+        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
         <XAxis
           dataKey="date"
-          className="text-xs"
+          tick={{ fill: '#94a3b8', fontSize: 12 }}
           minTickGap={20}
           tickFormatter={(v) => (typeof v === 'string' ? v.slice(0, 10) : v)}
         />
         <YAxis
           yAxisId="price"
-          className="text-xs"
+          tick={{ fill: '#94a3b8', fontSize: 12 }}
           domain={[priceMin - pad, priceMax + pad]}
           allowDecimals
           tickFormatter={(v) => v.toFixed(2)}
@@ -88,15 +88,16 @@ export function CandlestickChart({ data, height = 400 }: CandlestickChartProps) 
         <YAxis
           yAxisId="volume"
           orientation="right"
-          className="text-xs"
+          tick={{ fill: '#94a3b8', fontSize: 12 }}
           domain={[0, Math.round(volumeMax * 1.1) || 1]}
           allowDecimals={false}
           tickFormatter={(val) => `${Math.round(val / 1_000)}k`}
         />
         <Tooltip
           contentStyle={{
-            backgroundColor: 'hsl(var(--background))',
-            border: '1px solid hsl(var(--border))',
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            border: '1px solid rgba(255,255,255,0.1)',
+            color: '#e2e8f0',
           }}
           formatter={(value: any, name: string) => [value, name.toUpperCase()]}
           labelFormatter={(label) => `Date: ${label}`}

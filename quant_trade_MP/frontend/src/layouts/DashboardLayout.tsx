@@ -1,117 +1,89 @@
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useState } from 'react';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { useTheme } from '@/context/ThemeProvider';
 import { ToastContainer } from '@/components/loaders/Toast';
+import { Sidebar, SidebarItem } from '@/components/portfolio/Sidebar';
+import { useBacktestRuns, usePortfolioRuns, useRiskStatus } from '@/hooks/useApi';
 import {
   LayoutDashboard,
   TrendingUp,
-  Sparkles,
   Briefcase,
   Bell,
   BarChart3,
-  Shield,
-  FileText,
   Settings,
   Moon,
   Sun,
   Menu,
-  X,
+  FlaskConical,
 } from 'lucide-react';
-
-interface NavItem {
-  title: string;
-  href: string;
-  icon: React.ReactNode;
-}
-
-const navItems: NavItem[] = [
-  { title: 'Dashboard', href: '/', icon: <LayoutDashboard className="h-5 w-5" /> },
-  { title: 'Market Data', href: '/market-data', icon: <TrendingUp className="h-5 w-5" /> },
-  { title: 'Features', href: '/features', icon: <Sparkles className="h-5 w-5" /> },
-  { title: 'Portfolio', href: '/portfolio', icon: <Briefcase className="h-5 w-5" /> },
-  { title: 'Signals', href: '/signals', icon: <Bell className="h-5 w-5" /> },
-  { title: 'Backtester', href: '/backtester', icon: <BarChart3 className="h-5 w-5" /> },
-  { title: 'Risk', href: '/risk', icon: <Shield className="h-5 w-5" /> },
-  { title: 'Reports', href: '/reports', icon: <FileText className="h-5 w-5" /> },
-  { title: 'Settings', href: '/settings', icon: <Settings className="h-5 w-5" /> },
-];
 
 export function DashboardLayout() {
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: portfolioRuns } = usePortfolioRuns();
+  const { data: backtestRuns } = useBacktestRuns();
+  const { data: riskStatus } = useRiskStatus();
+
+  const navItems: SidebarItem[] = [
+    { title: 'Dashboard', href: '/', icon: <LayoutDashboard className="h-5 w-5" /> },
+    { title: 'Market Data', href: '/market-data', icon: <TrendingUp className="h-5 w-5" /> },
+    {
+      title: 'Portfolio Constructor',
+      href: '/portfolio',
+      icon: <Briefcase className="h-5 w-5" />,
+      badge: portfolioRuns?.length,
+    },
+    {
+      title: 'Backtester',
+      href: '/backtester',
+      icon: <BarChart3 className="h-5 w-5" />,
+      badge: backtestRuns?.length,
+    },
+    {
+      title: 'Signals',
+      href: '/signals',
+      icon: <Bell className="h-5 w-5" />,
+      badge: riskStatus?.violations?.length,
+    },
+    { title: 'Research', href: '/features', icon: <FlaskConical className="h-5 w-5" /> },
+    { title: 'Settings', href: '/settings', icon: <Settings className="h-5 w-5" /> },
+  ];
 
   const toggleTheme = () => {
     setTheme(theme === 'dark' ? 'light' : 'dark');
   };
 
   return (
-    <div className="flex min-h-screen bg-background text-foreground">
+    <div className="flex min-h-screen text-slate-900 bg-slate-100 dark:text-slate-100 dark:bg-[radial-gradient(ellipse_at_top,_rgba(59,130,246,0.15),_transparent_55%),linear-gradient(180deg,#0B1220_0%,#0E1A2B_100%)]">
       {/* Toast Notifications */}
       <ToastContainer />
 
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex w-[240px] flex-col bg-card border-r border-border/50 shadow-lg">
-        <div className="border-b border-border/50 px-6 py-8 bg-gradient-to-b from-primary/5 to-transparent">
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Quant Suite</p>
-          <h1 className="mt-2 text-2xl font-bold bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">
-            Trading Desk
-          </h1>
-          <p className="text-sm text-muted-foreground">Assistant</p>
-        </div>
-        <nav className="flex-1 space-y-1 overflow-y-auto px-4 py-6">
-          {navItems.map((item) => {
-            const isActive = location.pathname === item.href;
-            return (
-              <Link key={item.href} to={item.href}>
-                <div
-                  className={cn(
-                    'flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200',
-                    isActive
-                      ? 'bg-primary/15 text-primary shadow-md'
-                      : 'text-muted-foreground hover:bg-primary/10 hover:text-primary'
-                  )}
-                >
-                  {item.icon}
-                  <span>{item.title}</span>
-                </div>
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="space-y-2 border-t border-border/50 px-4 py-6">
-          <Button
-            variant="outline"
-            className="w-full justify-start rounded-lg border-border/50"
-            onClick={toggleTheme}
-          >
-            {theme === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
-            {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-          </Button>
-        </div>
+      <aside className="hidden md:flex w-[260px] flex-col border-r border-slate-200 bg-white shadow-sm dark:border-white/10 dark:bg-slate-950/40 dark:shadow-[0_0_30px_rgba(15,23,42,0.6)] h-screen sticky top-0">
+        <Sidebar items={navItems} activePath={location.pathname} theme={theme} toggleTheme={toggleTheme} />
       </aside>
 
       {/* Mobile Header */}
-      <header className="md:hidden fixed inset-x-0 top-0 z-40 bg-card/95 backdrop-blur-lg border-b border-border/50 shadow-lg">
-        <div className="mx-auto max-w-[1400px] px-4 sm:px-6 py-4 flex items-center justify-between">
+      <header className="md:hidden fixed inset-x-0 top-0 z-40 border-b border-slate-200 bg-white/80 backdrop-blur-xl shadow-lg dark:border-white/10 dark:bg-slate-950/80">
+        <div className="mx-auto flex max-w-[1400px] items-center justify-between px-4 py-4 sm:px-6">
           <div className="flex items-center gap-3">
             <button
               aria-label="Open menu"
-              className="p-2 rounded-lg text-foreground hover:bg-primary/10 transition-colors duration-200"
+              className="rounded-lg p-2 text-slate-700 transition-colors duration-200 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-white/10"
               onClick={() => setMobileOpen(true)}
             >
               <Menu className="h-5 w-5" />
             </button>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Quant Suite</p>
-              <h2 className="text-lg font-bold text-foreground">Trading Desk</h2>
+              <p className="font-satoshi text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Quant Suite</p>
+              <h2 className="font-clash text-lg font-bold text-slate-900 dark:text-white">Trading Desk</h2>
             </div>
           </div>
           <Button
             variant="outline"
-            className="rounded-lg border-border/50"
+            className="rounded-lg border-slate-200 bg-slate-50 text-slate-700 dark:border-white/10 dark:bg-white/5 dark:text-slate-100"
             onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
           >
             {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
@@ -123,49 +95,26 @@ export function DashboardLayout() {
       {mobileOpen && (
         <div className="fixed inset-0 z-50 flex md:hidden">
           <div className="fixed inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
-          <div className="relative z-50 w-72 max-w-full bg-card shadow-2xl flex flex-col">
-            <div className="flex items-center justify-between px-4 py-4 border-b border-border/50 bg-gradient-to-r from-primary/5 to-transparent">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Quant Suite</p>
-                <h3 className="text-lg font-bold text-foreground">Trading Desk</h3>
-              </div>
-              <button aria-label="Close menu" className="p-2 rounded-lg hover:bg-primary/10 transition-colors duration-200" onClick={() => setMobileOpen(false)}>
-                <X className="h-5 w-5 text-foreground" />
-              </button>
-            </div>
-            <nav className="flex-1 px-3 py-6 space-y-1 overflow-y-auto">
-              {navItems.map((item) => {
-                const isActive = location.pathname === item.href;
-                return (
-                  <Link key={item.href} to={item.href} onClick={() => setMobileOpen(false)}>
-                    <div className={cn('flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-all duration-200', isActive ? 'bg-primary/15 text-primary' : 'text-muted-foreground hover:bg-primary/10')}>
-                      {item.icon}
-                      <span>{item.title}</span>
-                    </div>
-                  </Link>
-                );
-              })}
-            </nav>
-            <div className="px-4 py-6 border-t border-border/50">
-              <Button
-                variant="outline"
-                className="w-full justify-start rounded-lg border-border/50"
-                onClick={() => {
-                  setTheme(theme === 'dark' ? 'light' : 'dark');
-                  setMobileOpen(false);
-                }}
-              >
-                {theme === 'dark' ? <Sun className="h-4 w-4 mr-2" /> : <Moon className="h-4 w-4 mr-2" />}
-                {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
-              </Button>
-            </div>
+          <div className="relative z-50 w-80 max-w-full border-r border-slate-200 bg-white shadow-2xl dark:border-white/10 dark:bg-slate-950/60">
+            <Sidebar
+              items={navItems}
+              activePath={location.pathname}
+              onNavigate={() => setMobileOpen(false)}
+              showClose
+              onClose={() => setMobileOpen(false)}
+              theme={theme}
+              toggleTheme={() => {
+                setTheme(theme === 'dark' ? 'light' : 'dark');
+                setMobileOpen(false);
+              }}
+            />
           </div>
         </div>
       )}
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto pt-16 md:pt-0">
-        <div className="mx-auto w-full max-w-[1400px] px-4 sm:px-6 py-8">
+        <div className="mx-auto w-full max-w-[1400px] px-4 py-8 sm:px-6">
           <Outlet />
         </div>
       </main>

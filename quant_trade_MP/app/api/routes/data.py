@@ -5,8 +5,14 @@ import logging
 from typing import Optional, Dict, List
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from requests import RequestException
+import requests
 from sqlalchemy import func
 from sqlalchemy.orm import Session
+
+from app.services.semantic_search import SemanticSymbolSearchService
+from app.services.symbol_resolver import resolve_symbol, resolve_symbols
+from app.services.international_symbols import get_international_ticker
 
 try:
     from app.services.data_fetcher import DataFetcher
@@ -21,11 +27,20 @@ from app.models.schemas import (
     OHLCVResponse,
     OHLCVData,
     DataSummary,
+    SymbolInfo,
     ApiResponse,
 )
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/data", tags=["market_data"])
+
+YAHOO_SEARCH_URL = "https://query2.finance.yahoo.com/v1/finance/search"
+YAHOO_TIMEOUT = 6  # seconds
+try:
+    semantic_search_service = SemanticSymbolSearchService()
+except Exception as sem_exc:  # pragma: no cover - optional dependency issues
+    logger.warning("Semantic search service unavailable: %s", sem_exc)
+    semantic_search_service = None
 
 
 @router.post("/fetch", response_model=ApiResponse)
@@ -39,7 +54,18 @@ async def fetch_ohlcv_data(request: FetchOHLCVRequest):
     - **save_to_db**: Whether to save fetched data to database
     """
     try:
-        logger.info(f"Fetching OHLCV data for {request.symbols} from {request.start_date} to {request.end_date}")
+        resolved_symbols, unresolved = await resolve_symbols(request.symbols)
+        if unresolved:
+            raise HTTPException(status_code=400, detail=f"Unable to resolve symbols: {', '.join(unresolved)}")
+        if not resolved_symbols:
+            raise HTTPException(status_code=400, detail="No valid symbols provided")
+
+        logger.info(
+            "Fetching OHLCV data for %s from %s to %s",
+            resolved_symbols,
+            request.start_date,
+            request.end_date,
+        )
 
         if not _data_fetcher_available or DataFetcher is None:
             raise HTTPException(status_code=503, detail="DataFetcher service unavailable (missing dependencies)")
@@ -47,7 +73,7 @@ async def fetch_ohlcv_data(request: FetchOHLCVRequest):
         data_fetcher = DataFetcher()
         # Fetch data from yfinance or data source
         data = data_fetcher.fetch_ohlcv(
-            symbols=request.symbols,
+            symbols=resolved_symbols,
             start=request.start_date,
             end=request.end_date,
             save_to_db=request.save_to_db
@@ -79,7 +105,7 @@ async def fetch_ohlcv_data(request: FetchOHLCVRequest):
         
         response_data = {
             "data": ohlcv_data,
-            "symbols": request.symbols,
+            "symbols": resolved_symbols,
             "date_range": {
                 "start_date": request.start_date,
                 "end_date": request.end_date,
@@ -90,7 +116,7 @@ async def fetch_ohlcv_data(request: FetchOHLCVRequest):
         return ApiResponse(
             success=True,
             data=response_data,
-            message=f"Fetched data for {len(request.symbols)} symbols",
+            message=f"Fetched data for {len(resolved_symbols)} symbols",
             timestamp=datetime.utcnow().isoformat(),
         )
     
@@ -113,8 +139,14 @@ async def get_ohlcv_data(
     - **end_date**: End date in YYYY-MM-DD format
     """
     try:
-        symbol_list = [s.strip().upper() for s in symbols.split(",")]
-        logger.info(f"Loading OHLCV data for {symbol_list}")
+        raw_symbol_list = [s for s in symbols.split(",")]
+        symbol_list, unresolved = await resolve_symbols(raw_symbol_list)
+        if unresolved:
+            raise HTTPException(status_code=400, detail=f"Unable to resolve symbols: {', '.join(unresolved)}")
+        if not symbol_list:
+            raise HTTPException(status_code=400, detail="No valid symbols provided")
+
+        logger.info("Loading OHLCV data for %s", symbol_list)
 
         if not _data_fetcher_available or DataFetcher is None:
             raise HTTPException(status_code=503, detail="DataFetcher service unavailable (missing dependencies)")
@@ -272,3 +304,110 @@ async def get_available_symbols(db: Session = Depends(get_db)):
     except Exception as e:
         logger.error(f"Error fetching symbols: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error fetching symbols: {str(e)}")
+
+
+@router.get("/search", response_model=ApiResponse)
+def search_symbols(
+    query: str = Query(..., min_length=2, max_length=64, description="Symbol or company name fragment"),
+    limit: int = Query(8, ge=1, le=25, description="Maximum number of suggestions to return"),
+    db: Session = Depends(get_db),
+):
+    """Search tickers by symbol or company name using Yahoo Finance, international mapping, and DB fallback."""
+    try:
+        q = query.strip()
+        if not q:
+            raise HTTPException(status_code=400, detail="Query cannot be empty")
+
+        suggestions: List[SymbolInfo] = []
+        seen_symbols = set()
+
+        # Check for international symbol mapping first (e.g., "samsung" -> "005930.KS")
+        intl_ticker = get_international_ticker(q)
+        if intl_ticker:
+            suggestions.append(
+                SymbolInfo(
+                    symbol=intl_ticker,
+                    name=f"{q.title()} (International)",
+                    exchange="International",
+                    asset_type="Equity",
+                    ticker=intl_ticker,
+                )
+            )
+            seen_symbols.add(intl_ticker)
+
+        if semantic_search_service:
+            try:
+                semantic_matches = semantic_search_service.search(q, limit)
+                for match in semantic_matches:
+                    if match.symbol not in seen_symbols:
+                        suggestions.append(match)
+                        seen_symbols.add(match.symbol)
+            except Exception as sem_err:
+                logger.warning("Semantic search failed: %s", sem_err)
+
+        params = {
+            "q": q,
+            "lang": "en-US",
+            "region": "US",
+            "quotesCount": limit,
+            "quotesQueryId": "tss_match_phrase_query",
+            "multiQuoteQueryId": "multi_quote_single_token_query",
+            "enableCb": True,
+        }
+
+        if len(suggestions) < limit:
+            try:
+                response = requests.get(YAHOO_SEARCH_URL, params=params, timeout=YAHOO_TIMEOUT)
+                response.raise_for_status()
+                payload = response.json()
+                for quote in payload.get("quotes", []):
+                    symbol = quote.get("symbol")
+                    if not symbol or symbol in seen_symbols:
+                        continue
+                    name = quote.get("shortname") or quote.get("longname") or quote.get("name")
+                    suggestions.append(
+                        SymbolInfo(
+                            symbol=symbol.upper(),
+                            name=name,
+                            exchange=quote.get("exchDisp") or quote.get("exch"),
+                            asset_type=quote.get("typeDisp") or quote.get("quoteType"),
+                            ticker=symbol.upper(),
+                        )
+                    )
+                    seen_symbols.add(symbol.upper())
+                    if len(suggestions) >= limit:
+                        break
+            except RequestException as yahoo_err:
+                logger.warning("Yahoo symbol search failed: %s", yahoo_err)
+
+        if len(suggestions) < limit:
+            pattern = f"%{q.upper()}%"
+            rows = (
+                db.query(MarketData.symbol)
+                .filter(MarketData.symbol.ilike(pattern))
+                .limit(limit - len(suggestions))
+                .all()
+            )
+            for row in rows:
+                symbol = row[0]
+                if not symbol or symbol in seen_symbols:
+                    continue
+                suggestions.append(SymbolInfo(symbol=symbol, ticker=symbol))
+                seen_symbols.add(symbol)
+
+        payload = {
+            "suggestions": [s.model_dump(by_alias=True) for s in suggestions[:limit]],
+        }
+
+        return ApiResponse(
+            success=True,
+            data=payload,
+            message=f"Found {len(payload['suggestions'])} symbol matches",
+            timestamp=datetime.utcnow().isoformat(),
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.exception("Error searching symbols: %s", e)
+        raise HTTPException(status_code=500, detail=f"Error searching symbols: {str(e)}")

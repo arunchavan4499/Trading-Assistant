@@ -1,17 +1,20 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { isAxiosError } from 'axios';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import SymbolMultiSelect from '@/components/inputs/SymbolMultiSelect';
 import { CustomLineChart } from '@/components/charts/LineChart';
 import { PageLoader } from '@/components/loaders/Loader';
 import { ErrorDisplay } from '@/components/loaders/ErrorDisplay';
 import { useRunBacktest, useBacktestRuns } from '@/hooks/useApi';
 import { toast } from '@/components/loaders/Toast';
 import { BacktestConfig, BacktestResult } from '@/types';
+import type { SymbolSuggestion } from '@/types';
 import { Play, Download } from 'lucide-react';
 import { getTodayDateString, getOffsetDateString } from '@/api/utils';
+import { GLOBAL_SYMBOL_SELECTED_EVENT } from '@/lib/events';
 
 export default function Backtester() {
   const { data: backtestRuns, isLoading, error } = useBacktestRuns();
@@ -19,8 +22,8 @@ export default function Backtester() {
   const [latestResult, setLatestResult] = useState<BacktestResult | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
 
+  const [selectedSymbols, setSelectedSymbols] = useState<string[]>(['AAPL', 'MSFT', 'GOOGL']);
   const [config, setConfig] = useState<Partial<BacktestConfig>>({
-    symbols: ['AAPL', 'MSFT', 'GOOGL'],
     start_date: getOffsetDateString(-365),
     end_date: getTodayDateString(),
     rebalance_freq: '7D',
@@ -32,7 +35,7 @@ export default function Backtester() {
   });
 
   const parsedWeights = useMemo(() => {
-    const symbols = config.symbols ?? [];
+    const symbols = selectedSymbols;
     if (!symbols.length) return {};
 
     const provided = config.weights ?? {};
@@ -42,7 +45,7 @@ export default function Backtester() {
       acc[symbol] = provided[symbol] ?? Number(defaultWeight.toFixed(4));
       return acc;
     }, {});
-  }, [config.symbols, config.weights]);
+  }, [selectedSymbols, config.weights]);
 
   const latestBacktest = backtestRuns?.[0];
 
@@ -51,7 +54,7 @@ export default function Backtester() {
   }, [latestResult, latestBacktest]);
 
   const buildBacktestPayload = (): BacktestConfig => {
-    const symbols = config.symbols ?? [];
+    const symbols = selectedSymbols;
     if (!symbols.length) {
       throw new Error('Please provide at least one symbol.');
     }
@@ -127,6 +130,19 @@ export default function Backtester() {
 
   const metrics = activeBacktest?.metrics;
 
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<SymbolSuggestion>).detail;
+      if (!detail?.symbol && !detail?.ticker) return;
+      const ticker = (detail.ticker || detail.symbol || '').trim().toUpperCase();
+      if (!ticker) return;
+      setSelectedSymbols((prev) => (prev.includes(ticker) ? prev : [...prev, ticker]));
+    };
+
+    window.addEventListener(GLOBAL_SYMBOL_SELECTED_EVENT, handler);
+    return () => window.removeEventListener(GLOBAL_SYMBOL_SELECTED_EVENT, handler);
+  }, []);
+
   if (isLoading && !backtestRuns) {
     return <PageLoader />;
   }
@@ -138,20 +154,28 @@ export default function Backtester() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Backtester</h1>
-        <p className="text-muted-foreground">Simulate trading strategies with realistic costs</p>
+        <h1 className="font-clash text-3xl tracking-[0.030em] font-bold text-slate-900 dark:text-white">Backtester</h1>
+        <p className="text-slate-500 dark:text-slate-400">Simulate trading strategies with realistic costs</p>
       </div>
 
       {/* Config Form */}
       <Card>
         <CardHeader>
-          <CardTitle>Backtest Configuration</CardTitle>
+          <CardTitle className="tracking-[0.030em]">Backtest Configuration</CardTitle>
           <CardDescription>Set parameters for strategy simulation</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div>
+            <SymbolMultiSelect
+              label="Symbols"
+              value={selectedSymbols}
+              onChange={(list) => setSelectedSymbols(list)}
+              placeholder="Search ticker or company"
+            />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <Label htmlFor="startDate">Start Date</Label>
+              <Label htmlFor="startDate tracking-[0.030em]">Start Date</Label>
               <Input
                 id="startDate"
                 type="date"
@@ -160,7 +184,7 @@ export default function Backtester() {
               />
             </div>
             <div>
-              <Label htmlFor="endDate">End Date</Label>
+              <Label htmlFor="endDate tracking-[0.030em]">End Date</Label>
               <Input
                 id="endDate"
                 type="date"
@@ -169,7 +193,7 @@ export default function Backtester() {
               />
             </div>
             <div>
-              <Label htmlFor="rebalanceFreq">Rebalance Frequency</Label>
+              <Label htmlFor="rebalanceFreq tracking-[0.030em]">Rebalance Frequency</Label>
               <Input
                 id="rebalanceFreq"
                 value={config.rebalance_freq}
@@ -178,7 +202,7 @@ export default function Backtester() {
               />
             </div>
             <div>
-              <Label htmlFor="commission">Commission Rate (%)</Label>
+              <Label htmlFor="commission tracking-[0.030em]">Commission Rate (%)</Label>
               <Input
                 id="commission"
                 type="number"
@@ -200,7 +224,7 @@ export default function Backtester() {
               />
             </div>
             <div>
-              <Label htmlFor="capital">Initial Capital ($)</Label>
+              <Label htmlFor="capital tracking-[0.030em]">Initial Capital ($)</Label>
               <Input
                 id="capital"
                 type="number"
@@ -223,38 +247,38 @@ export default function Backtester() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Sharpe Ratio</CardTitle>
+                <CardTitle className="text-sm tracking-[0.030em]">Sharpe Ratio</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">{metrics?.sharpe?.toFixed(2) || 'N/A'}</p>
+                <p className="font-clash text-2xl font-bold text-slate-900 dark:text-white">{metrics?.sharpe?.toFixed(2) || 'N/A'}</p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Annual Return</CardTitle>
+                <CardTitle className="text-sm tracking-[0.030em]">Annual Return</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="font-clash text-2xl font-bold text-green-600 dark:text-green-400">
                   {((metrics?.ann_return || metrics?.annual_return || 0) * 100).toFixed(2)}%
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Volatility</CardTitle>
+                <CardTitle className="text-sm tracking-[0.030em]">Volatility</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold">
+                <p className="font-clash text-2xl font-bold text-slate-900 dark:text-white">
                   {((metrics?.ann_vol || metrics?.annual_vol || 0) * 100).toFixed(2)}%
                 </p>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Max Drawdown</CardTitle>
+                <CardTitle className="text-sm tracking-[0.030em]">Max Drawdown</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-2xl font-bold text-red-600">
+                <p className="font-clash text-2xl font-bold text-red-500 dark:text-red-400">
                   {((metrics?.max_drawdown || 0) * 100).toFixed(2)}%
                 </p>
               </CardContent>
@@ -265,7 +289,7 @@ export default function Backtester() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Equity Curve</CardTitle>
+                  <CardTitle className="tracking-[0.030em]">Equity Curve</CardTitle>
                   <CardDescription>Portfolio value over time</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -279,7 +303,7 @@ export default function Backtester() {
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Drawdown</CardTitle>
+                  <CardTitle className="tracking-[0.030em]">Drawdown</CardTitle>
                   <CardDescription>Peak-to-trough decline</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -295,7 +319,7 @@ export default function Backtester() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Download Results</CardTitle>
+              <CardTitle className="tracking-[0.030em]">Download Results</CardTitle>
               <CardDescription>Export backtest data</CardDescription>
             </CardHeader>
             <CardContent>

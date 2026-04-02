@@ -32,10 +32,10 @@ export function Heatmap({ data, labels, height = 400, colorScale }: HeatmapProps
     const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
     return result
       ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
-        }
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
       : { r: 0, g: 0, b: 0 };
   };
 
@@ -51,25 +51,25 @@ export function Heatmap({ data, labels, height = 400, colorScale }: HeatmapProps
         <div className="flex mb-2">
           <div style={{ width: cellSize }} />
           {labels.map((label, i) => (
-            <div key={i} className="text-xs text-center" style={{ width: cellSize }}>
+            <div key={i} className="text-xs text-center text-slate-400" style={{ width: cellSize }}>
               {label}
             </div>
           ))}
         </div>
         {data.map((row, i) => (
           <div key={i} className="flex">
-            <div className="text-xs flex items-center pr-2" style={{ width: cellSize }}>
+            <div className="text-xs text-slate-400 flex items-center pr-2" style={{ width: cellSize }}>
               {labels[i]}
             </div>
             {row.map((value, j) => (
               <div
                 key={j}
-                className={cn('border border-border flex items-center justify-center text-xs font-mono')}
+                className={cn('border border-slate-200 flex items-center justify-center text-xs font-mono dark:border-white/10')}
                 style={{
                   width: cellSize,
                   height: cellSize,
                   backgroundColor: getColor(value, min, max),
-                  color: value > (min + max) / 2 ? '#fff' : '#000',
+                  color: '#fff',
                 }}
                 title={`${labels[i]} × ${labels[j]}: ${value.toFixed(4)}`}
               >

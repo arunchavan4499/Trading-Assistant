@@ -22,32 +22,32 @@ export function StatCard({ title, value, description, icon, trend, className }: 
       )}
     >
       {/* Gradient background overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-      
+      <div className="absolute inset-0 bg-gradient-to-br from-sky-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-0 relative z-10">
         <div className="flex-1">
-          <CardTitle className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+          <CardTitle className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">
             {title}
           </CardTitle>
-          <div className="text-4xl font-bold bg-gradient-to-br from-foreground to-foreground/80 bg-clip-text text-transparent">
+          <div className="font-clash text-4xl font-bold text-slate-900 dark:text-white">
             {value}
           </div>
         </div>
         {icon && (
-          <div className="rounded-lg bg-primary/10 p-3 text-primary group-hover:bg-primary/20 transition-colors duration-300">
+          <div className="rounded-lg bg-sky-500/15 p-3 text-sky-400 group-hover:bg-sky-500/25 transition-colors duration-300">
             {icon}
           </div>
         )}
       </CardHeader>
       <CardContent className="flex-1 pt-4 relative z-10 flex flex-col justify-end">
-        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+        {description && <p className="text-sm text-slate-400">{description}</p>}
         {trend && (
           <div
             className={cn(
               'mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold backdrop-blur-sm transition-all duration-200 w-fit',
-              trend.isPositive 
-                ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' 
-                : 'bg-red-500/15 text-red-600 dark:text-red-400'
+              trend.isPositive
+                ? 'bg-emerald-500/15 text-emerald-400'
+                : 'bg-red-500/15 text-red-400'
             )}
           >
             <span className="text-lg">{trend.isPositive ? '↑' : '↓'}</span>

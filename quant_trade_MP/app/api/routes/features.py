@@ -20,6 +20,7 @@ from app.models.schemas import (
     CorrelationResponse,
     ApiResponse,
 )
+from app.services.symbol_resolver import resolve_symbol, resolve_symbols
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/features", tags=["features"])
@@ -38,12 +39,18 @@ async def compute_features(request: ComputeFeaturesRequest):
     try:
         logger.info(f"Computing features for {request.symbols}")
 
+        resolved_symbols, unresolved = await resolve_symbols(request.symbols)
+        if unresolved:
+            raise HTTPException(status_code=400, detail=f"Unable to resolve symbols: {', '.join(unresolved)}")
+        if not resolved_symbols:
+            raise HTTPException(status_code=400, detail="No valid symbols provided")
+
         # Ensure market data exists by fetching it first
         try:
             from app.services.data_fetcher import DataFetcher
             data_fetcher = DataFetcher()
             data_fetcher.fetch_ohlcv(
-                symbols=request.symbols,
+                symbols=resolved_symbols,
                 start=request.start_date,
                 end=request.end_date,
                 save_to_db=True
@@ -58,7 +65,7 @@ async def compute_features(request: ComputeFeaturesRequest):
         # Compute features using FeatureEngineer (instantiate lazily)
         feature_engineer = FeatureEngineer()
         features = feature_engineer.compute_features_bulk(
-            symbols=request.symbols,
+            symbols=resolved_symbols,
             start=request.start_date,
             end=request.end_date,
             save=request.save
@@ -98,7 +105,7 @@ async def compute_features(request: ComputeFeaturesRequest):
         # Safely get feature count
         feature_count = 0
         if request.symbols:
-            first_sym = request.symbols[0]
+            first_sym = resolved_symbols[0]
             if first_sym in features:
                 feature_count = len(features[first_sym].columns)
             elif features:
@@ -107,14 +114,14 @@ async def compute_features(request: ComputeFeaturesRequest):
 
         response_data = {
             "data": features_data,
-            "symbols": request.symbols,
+            "symbols": resolved_symbols,
             "feature_count": feature_count,
         }
         
         return ApiResponse(
             success=True,
             data=response_data,
-            message=f"Computed features for {len(request.symbols)} symbols",
+            message=f"Computed features for {len(resolved_symbols)} symbols",
             timestamp=datetime.utcnow().isoformat(),
         )
     
@@ -172,6 +179,10 @@ async def get_features(
     try:
         logger.info(f"Fetching features for {symbol}")
 
+        resolved = await resolve_symbol(symbol)
+        if not resolved:
+            raise HTTPException(status_code=400, detail=f"Unable to resolve symbol: {symbol}")
+
         if not _feature_engineer_available or FeatureEngineer is None:
             raise HTTPException(status_code=503, detail="FeatureEngineer service unavailable (missing dependencies)")
 
@@ -184,24 +195,24 @@ async def get_features(
 
         # We use compute_features_bulk for consistency, even for a single symbol
         features = feature_engineer.compute_features_bulk(
-            symbols=[symbol],
+            symbols=[resolved],
             start=s_date,
             end=e_date,
             save=False  # Don't overwrite existing files just for a read
         )
         
-        if not features or symbol not in features:
+        if not features or resolved not in features:
             raise HTTPException(status_code=404, detail=f"No features found for symbol {symbol}")
 
         # Convert DataFrame to list of dicts
-        df = features[symbol]
+        df = features[resolved]
         records = []
         for idx, row in df.iterrows():
             # Ensure idx is treated as timestamp
             ts_idx = pd.Timestamp(idx) # type: ignore
             record: Dict[str, Any] = {
                 "date": ts_idx.strftime("%Y-%m-%d"),
-                "symbol": symbol,
+                "symbol": resolved,
             }
             # Add all feature columns
             for col in df.columns:
@@ -223,8 +234,8 @@ async def get_features(
         
         return ApiResponse(
             success=True,
-            data={"symbol": symbol, "features": records},
-            message=f"Fetched features for {symbol}",
+            data={"symbol": resolved, "features": records},
+            message=f"Fetched features for {resolved}",
             timestamp=datetime.utcnow().isoformat(),
         )
     
@@ -246,13 +257,19 @@ async def compute_correlations(request: CorrelationRequest):
     try:
         logger.info(f"Computing feature correlations for {request.symbols}")
 
+        resolved_symbols, unresolved = await resolve_symbols(request.symbols)
+        if unresolved:
+            raise HTTPException(status_code=400, detail=f"Unable to resolve symbols: {', '.join(unresolved)}")
+        if not resolved_symbols:
+            raise HTTPException(status_code=400, detail="No valid symbols provided")
+
         # Ensure market data exists by fetching it first
         try:
             logger.info("Fetching market data...")
             from app.services.data_fetcher import DataFetcher
             data_fetcher = DataFetcher()
             data_fetcher.fetch_ohlcv(
-                symbols=request.symbols,
+                symbols=resolved_symbols,
                 start=request.start_date,
                 end=request.end_date,
                 save_to_db=True
@@ -271,7 +288,7 @@ async def compute_correlations(request: CorrelationRequest):
             logger.info("Computing features...")
             feature_engineer = FeatureEngineer()
             features = feature_engineer.compute_features_bulk(
-                symbols=request.symbols,
+                symbols=resolved_symbols,
                 start=request.start_date,
                 end=request.end_date,
                 save=False
@@ -329,7 +346,7 @@ async def compute_correlations(request: CorrelationRequest):
         
         response_data = {
             "correlations": correlations,
-            "symbols": request.symbols,
+            "symbols": resolved_symbols,
             "sample_size": len(combined_features) if combined_features is not None else 0,
         }
         

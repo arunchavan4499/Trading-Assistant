@@ -16,7 +16,7 @@ interface RebalanceTableProps {
 export function RebalanceTable({ plan }: RebalanceTableProps) {
   if (!plan || !plan.trades) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
+      <div className="text-center py-8 text-slate-400">
         No rebalance data available yet.
       </div>
     );
@@ -31,7 +31,7 @@ export function RebalanceTable({ plan }: RebalanceTableProps) {
 
   if (trades.length === 0) {
     return (
-      <div className="text-center py-8 text-muted-foreground">
+      <div className="text-center py-8 text-slate-400">
         No rebalancing trades required. Portfolio is within target thresholds.
       </div>
     );
@@ -60,8 +60,8 @@ export function RebalanceTable({ plan }: RebalanceTableProps) {
                   className={cn(
                     'px-2 py-1 rounded text-xs font-semibold',
                     trade.side === SignalType.BUY
-                      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
-                      : 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400'
+                      ? 'bg-green-900/40 text-green-400'
+                      : 'bg-red-900/40 text-red-400'
                   )}
                 >
                   {trade.side}
@@ -72,7 +72,7 @@ export function RebalanceTable({ plan }: RebalanceTableProps) {
               <TableCell
                 className={cn(
                   'text-right font-semibold',
-                  (trade.notional_diff ?? 0) > 0 ? 'text-green-600' : 'text-red-600'
+                  (trade.notional_diff ?? 0) > 0 ? 'text-green-400' : 'text-red-400'
                 )}
               >
                 ${formatCurrency(Math.abs(trade.notional_diff ?? 0))}
@@ -83,19 +83,19 @@ export function RebalanceTable({ plan }: RebalanceTableProps) {
           ))}
         </TableBody>
       </Table>
-      <div className="mt-4 p-4 bg-muted rounded-lg">
+      <div className="mt-4 p-4 bg-slate-50 border border-slate-200 rounded-lg dark:bg-white/5 dark:border-white/10">
         <div className="grid grid-cols-3 gap-4 text-sm">
           <div>
-            <p className="text-muted-foreground">Current Value</p>
-            <p className="text-lg font-semibold">${formatCurrency(plan.summary?.current_value)}</p>
+            <p className="text-slate-500 dark:text-slate-400">Current Value</p>
+            <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">${formatCurrency(plan.summary?.current_value)}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Target Value</p>
-            <p className="text-lg font-semibold">${formatCurrency(plan.summary?.target_value)}</p>
+            <p className="text-slate-500 dark:text-slate-400">Target Value</p>
+            <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">${formatCurrency(plan.summary?.target_value)}</p>
           </div>
           <div>
-            <p className="text-muted-foreground">Total Deviation</p>
-            <p className="text-lg font-semibold">{formatPercent(plan.summary?.l1_deviation)}</p>
+            <p className="text-slate-500 dark:text-slate-400">Total Deviation</p>
+            <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">{formatPercent(plan.summary?.l1_deviation)}</p>
           </div>
         </div>
       </div>

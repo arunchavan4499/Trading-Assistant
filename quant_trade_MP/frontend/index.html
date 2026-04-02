@@ -1,13 +1,32 @@
 <!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quant Trading Assistant</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<html lang="en" class="dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <script>
+    (function () {
+      // Force dark mode as default - migration v2
+      var migrated = localStorage.getItem('quant-theme-migrated-v2');
+      if (!migrated) {
+        localStorage.setItem('quant-ui-theme', 'dark');
+        localStorage.setItem('quant-theme-migrated-v2', 'true');
+      }
+      var theme = localStorage.getItem('quant-ui-theme');
+      if (theme === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      }
+      // dark class already present in HTML
+    })();
+  </script>
+  <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quant Trading Assistant</title>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
 </html>

@@ -1,9 +1,24 @@
 
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, JSON, ForeignKey, BigInteger, Index
+from sqlalchemy import (
+    create_engine,
+    Column,
+    Integer,
+    String,
+    Float,
+    DateTime,
+    JSON,
+    ForeignKey,
+    BigInteger,
+    Index,
+    text,
+)
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
+from sqlalchemy.engine import make_url
+from sqlalchemy.pool import StaticPool
 from datetime import datetime, timezone
 from sqlalchemy import UniqueConstraint, Index, DateTime, BigInteger
+from pgvector.sqlalchemy import Vector
 
 
 # ... your models here (unchanged) ...
@@ -129,14 +144,57 @@ class BacktestRun(Base):
     trades = Column(JSON)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
+
+class TickerMetadata(Base):
+    __tablename__ = 'ticker_metadata'
+
+    symbol = Column(String(20), primary_key=True)
+    name = Column(String(200), nullable=False)
+    description = Column(String(1000))
+    exchange = Column(String(50))
+    sector = Column(String(100))
+    aliases = Column(JSON, default=list)
+    last_refreshed = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+
+class TickerEmbedding(Base):
+    __tablename__ = 'ticker_embeddings'
+
+    symbol = Column(String(20), ForeignKey('ticker_metadata.symbol'), primary_key=True)
+    model_name = Column(String(200), nullable=False)
+    embedding = Column(Vector(384))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
+
+    metadata_rel = relationship('TickerMetadata', backref='embedding')
+
 # Database connection
 
 
 DATABASE_URL = settings.DATABASE_URL
-engine = create_engine(DATABASE_URL, pool_size=5, max_overflow=10)
+url = make_url(DATABASE_URL)
+
+if url.get_backend_name() == "sqlite":
+    # SQLite cannot use the same pool args as Postgres; StaticPool keeps behavior predictable in dev/local tests.
+    engine = create_engine(
+        DATABASE_URL,
+        connect_args={"check_same_thread": False},
+        poolclass=StaticPool,
+    )
+else:
+    engine = create_engine(DATABASE_URL, pool_size=5, max_overflow=10)
 SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 
 # Create all tables
+def ensure_pgvector_extension():
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+    except Exception:
+        # Extension already exists or not supported; swallow error to keep init resilient
+        pass
+
+
 def init_db():
+    ensure_pgvector_extension()
     Base.metadata.create_all(bind=engine)

@@ -1,9 +1,12 @@
-"""
-Quick API test - verify server is responding
-"""
+"""Quick API smoke tester meant for manual CLI use, not pytest collection."""
 import sys
 import urllib.request
 import json
+
+if 'pytest' in sys.modules:  # pragma: no cover - skips during automated test runs
+    import pytest
+
+    pytest.skip("quick_api_test is a standalone CLI helper, skip under pytest", allow_module_level=True)
 
 def test_endpoint(url, name):
     """Test a single endpoint."""

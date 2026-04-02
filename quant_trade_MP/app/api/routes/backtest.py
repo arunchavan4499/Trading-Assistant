@@ -40,6 +40,7 @@ from app.models.schemas import (
     TradeRecord,
     ApiResponse,
 )
+from app.services.symbol_resolver import resolve_symbols
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/backtest", tags=["backtest"])
@@ -108,9 +109,15 @@ async def run_backtest(request: BacktestConfig, db: Session = Depends(get_db)):
             trimmed = value.strip().lower()
             return trimmed in {"", "string", "null", "undefined"}
 
-        cleaned_symbols = [sym.strip().upper() for sym in request.symbols if isinstance(sym, str) and not _is_placeholder(sym)]
-        if not cleaned_symbols:
+        input_symbols = [sym.strip() for sym in request.symbols if isinstance(sym, str) and not _is_placeholder(sym)]
+        if not input_symbols:
             raise HTTPException(status_code=400, detail="Please provide at least one valid ticker symbol.")
+
+        cleaned_symbols, unresolved = await resolve_symbols(input_symbols)
+        if unresolved:
+            raise HTTPException(status_code=400, detail=f"Unable to resolve symbols: {', '.join(unresolved)}")
+        if not cleaned_symbols:
+            raise HTTPException(status_code=400, detail="No valid symbols after resolution.")
 
         if _is_placeholder(request.start_date) or _is_placeholder(request.end_date):
             raise HTTPException(status_code=400, detail="Please provide valid start and end dates for the backtest.")
@@ -243,7 +250,7 @@ async def run_backtest(request: BacktestConfig, db: Session = Depends(get_db)):
         
         run_record = BacktestRunModel(
             run_name=request.run_name or f"backtest-{datetime.utcnow().isoformat()}",
-            symbols=request.symbols,
+            symbols=cleaned_symbols,
             config=request.dict(),
             metrics=backtest_metrics.dict(),
             equity_curve=[ec.dict() for ec in equity_curve],

@@ -10,16 +10,16 @@ interface ErrorDisplayProps {
 
 export function ErrorDisplay({ title = 'Error', message, retry }: ErrorDisplayProps) {
   return (
-    <Card className="border-destructive">
+    <Card className="border-red-500/50">
       <CardHeader>
         <div className="flex items-center gap-2">
-          <AlertCircle className="h-5 w-5 text-destructive" />
-          <CardTitle className="text-destructive">{title}</CardTitle>
+          <AlertCircle className="h-5 w-5 text-red-400" />
+          <CardTitle className="text-red-400">{title}</CardTitle>
         </div>
-        <CardDescription>Something went wrong</CardDescription>
+        <CardDescription className="text-slate-400">Something went wrong</CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="text-sm mb-4">{message}</p>
+        <p className="text-sm text-slate-300 mb-4">{message}</p>
         {retry && (
           <Button variant="outline" onClick={retry}>
             Try Again

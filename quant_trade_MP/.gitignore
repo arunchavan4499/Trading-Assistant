@@ -140,4 +140,41 @@ temp/
 celerybeat-schedule
 celerybeat.pid
 
-# =====================
+# ===========================
+# 📈 Generated Results & Backtest Data
+# ===========================
+results/
+backtest_results/
+*.equity.csv
+equity_*.csv
+trades_*.csv
+backtest_report.json
+
+# ===========================
+# 📦 Frontend Dependencies & Build
+# ===========================
+frontend/node_modules/
+frontend/.parcel-cache
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+
+# ===========================
+# 💾 Database & Generated Files
+# ===========================
+app.db
+
+# ===========================
+# 🔑 Additional Security Patterns
+# ===========================
+.aws/
+.ssh/
+*.p12
+*.pfx
+*.jks
+keystore
+.keystore
+credentials
+.credentials
+oauth.json
+service-account-key.json

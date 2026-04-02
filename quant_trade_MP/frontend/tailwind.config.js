@@ -17,6 +17,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        clash: ["'Clash Display'", 'system-ui', 'sans-serif'],
+        satoshi: ["'Satoshi'", 'system-ui', 'sans-serif'],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",

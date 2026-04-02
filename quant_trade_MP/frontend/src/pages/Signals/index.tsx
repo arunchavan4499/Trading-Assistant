@@ -42,7 +42,7 @@ export default function Signals() {
         newPrices[symbol] = prices[symbol] || `${100 + index * 50}`;
       });
       setPrices(newPrices);
-      
+
       // Initialize quantities with default values for each symbol
       const newQty: Record<string, string> = {};
       symbols.forEach((symbol, index) => {
@@ -78,7 +78,7 @@ export default function Signals() {
         current_equity: parseFloat(currentEquity),
         peak_equity: parseFloat(peakEquity),
       });
-      
+
       toast.success('Rebalance plan generated successfully');
     } catch (error) {
       toast.error(`Failed to generate rebalance plan: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -90,14 +90,14 @@ export default function Signals() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Trade Signal Engine</h1>
-        <p className="text-muted-foreground">Generate rebalancing trades based on portfolio deviation</p>
+        <h1 className="font-clash text-3xl font-bold text-slate-900 dark:text-white tracking-[0.030em]">Trade Signal Engine</h1>
+        <p className="text-slate-500 dark:text-slate-400">Generate rebalancing trades based on portfolio deviation</p>
       </div>
 
       {!latestPortfolio ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <p className="text-muted-foreground">No active portfolio. Create one in the Portfolio tab first.</p>
+            <p className="text-slate-400">No active portfolio. Create one in the Portfolio tab first.</p>
           </CardContent>
         </Card>
       ) : (
@@ -105,7 +105,7 @@ export default function Signals() {
           {/* Input Form */}
           <Card>
             <CardHeader>
-              <CardTitle>Current Positions & Prices</CardTitle>
+              <CardTitle className="tracking-[0.030em]">Current Positions & Prices</CardTitle>
               <CardDescription>Enter your current holdings and latest prices</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -176,8 +176,8 @@ export default function Signals() {
                 const signal: SignalType = normalized === 'BUY'
                   ? SignalType.BUY
                   : normalized === 'SELL'
-                  ? SignalType.SELL
-                  : SignalType.HOLD;
+                    ? SignalType.SELL
+                    : SignalType.HOLD;
                 return (
                   <SignalCard
                     signal={signal}

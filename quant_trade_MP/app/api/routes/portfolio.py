@@ -9,6 +9,8 @@ from sqlalchemy.orm import Session
 import numpy as np
 import pandas as pd
 
+from app.services.symbol_resolver import resolve_symbols
+
 try:
     from app.services.feature_engineer import FeatureEngineer
     _feature_engineer_available = True
@@ -89,12 +91,18 @@ async def construct_portfolio(request: ConstructPortfolioRequest, db: Session = 
     """
     try:
         logger.info(f"Constructing portfolio for {request.symbols}")
+
+        resolved_symbols, unresolved = await resolve_symbols(request.symbols)
+        if unresolved:
+            raise HTTPException(status_code=400, detail=f"Unable to resolve symbols: {', '.join(unresolved)}")
+        if not resolved_symbols:
+            raise HTTPException(status_code=400, detail="No valid symbols provided")
         
         # Step 1: Fetch market data
         from app.services.data_fetcher import DataFetcher
         data_fetcher = DataFetcher()
         market_data = data_fetcher.fetch_ohlcv(
-            symbols=request.symbols,
+            symbols=resolved_symbols,
             start=request.start_date,
             end=request.end_date,
             save_to_db=True
@@ -146,7 +154,7 @@ async def construct_portfolio(request: ConstructPortfolioRequest, db: Session = 
             A=A,
             cov=cov,
             raw_returns=None,
-            symbols=request.symbols,
+            symbols=resolved_symbols,
             opts=pc_options,
             w_prev=None,
             link_run_id=None,
@@ -168,12 +176,12 @@ async def construct_portfolio(request: ConstructPortfolioRequest, db: Session = 
             portfolio_std=portfolio_std,
             sharpe_ratio=metrics.get("sharpe_ratio"),
             sparsity=metrics.get("sparsity"),
-            num_assets=int(metrics.get("n_assets") or len(request.symbols)),
+            num_assets=int(metrics.get("n_assets") or len(resolved_symbols)),
         )
         
         run_record = PortfolioRunModel(
             run_name=request.options.run_name or f"portfolio-{datetime.utcnow().isoformat()}",
-            symbols=request.symbols,
+            symbols=resolved_symbols,
             weights_json=weights_dict,
             method=request.options.method,
             link_run_id=metrics.get("run_id"),
@@ -196,7 +204,7 @@ async def construct_portfolio(request: ConstructPortfolioRequest, db: Session = 
         return ApiResponse(
             success=True,
             data=response_data,
-            message=f"Portfolio constructed for {len(request.symbols)} assets",
+            message=f"Portfolio constructed for {len(resolved_symbols)} assets",
             timestamp=datetime.utcnow().isoformat(),
         )
     
@@ -224,12 +232,18 @@ async def compute_covariance(request: CovarianceRequest):
     """
     try:
         logger.info(f"Computing covariance for {request.symbols}")
+
+        resolved_symbols, unresolved = await resolve_symbols(request.symbols)
+        if unresolved:
+            raise HTTPException(status_code=400, detail=f"Unable to resolve symbols: {', '.join(unresolved)}")
+        if not resolved_symbols:
+            raise HTTPException(status_code=400, detail="No valid symbols provided")
         
         # Fetch market data
         from app.services.data_fetcher import DataFetcher
         data_fetcher = DataFetcher()
         market_data = data_fetcher.fetch_ohlcv(
-            symbols=request.symbols,
+            symbols=resolved_symbols,
             start=request.start_date,
             end=request.end_date,
             save_to_db=False
@@ -256,7 +270,7 @@ async def compute_covariance(request: CovarianceRequest):
         
         response_data = {
             "covariance_matrix": cov_list,
-            "symbols": request.symbols,
+            "symbols": resolved_symbols,
             "ridge_lambda": request.ridge_lambda,
         }
         
@@ -357,12 +371,17 @@ async def run_var_pipeline(request: RunVARRequest, db: Session = Depends(get_db)
     """
     try:
         logger.info(f"Running VAR pipeline for {request.symbols}")
+        resolved_symbols, unresolved = await resolve_symbols(request.symbols)
+        if unresolved:
+            raise HTTPException(status_code=400, detail=f"Unable to resolve symbols: {', '.join(unresolved)}")
+        if not resolved_symbols:
+            raise HTTPException(status_code=400, detail="No valid symbols provided")
         
         # Fetch market data
         from app.services.data_fetcher import DataFetcher
         data_fetcher = DataFetcher()
         market_data = data_fetcher.fetch_ohlcv(
-            symbols=request.symbols,
+            symbols=resolved_symbols,
             start=request.start_date,
             end=request.end_date,
             save_to_db=True
@@ -402,7 +421,7 @@ async def run_var_pipeline(request: RunVARRequest, db: Session = Depends(get_db)
 
         run_record = VarRunModel(
             run_name=request.run_name or f"var-{datetime.utcnow().isoformat()}",
-            symbols=request.symbols,
+            symbols=resolved_symbols,
             ridge_lambda=request.ridge_lambda,
             a_matrix=A.tolist(),
             cov_matrix=cov.tolist(),
@@ -415,7 +434,7 @@ async def run_var_pipeline(request: RunVARRequest, db: Session = Depends(get_db)
 
         response_data = {
             "run_id": run_record.id,
-            "symbols": request.symbols,
+                "symbols": resolved_symbols,
             "a_matrix": run_record.a_matrix,
             "covariance_matrix": run_record.cov_matrix,
             "diagnostics": diag,

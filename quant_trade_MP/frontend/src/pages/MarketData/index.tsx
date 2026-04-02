@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import SymbolMultiSelect from '@/components/inputs/SymbolMultiSelect';
 import { CandlestickChart } from '@/components/charts/CandlestickChart';
 import { Heatmap } from '@/components/charts/Heatmap';
 import { PageLoader } from '@/components/loaders/Loader';
@@ -11,21 +12,35 @@ import { useOHLCV } from '@/hooks/useApi';
 import { toast } from '@/components/loaders/Toast';
 import { TrendingUp } from 'lucide-react';
 import { getTodayDateString, getOffsetDateString } from '@/api/utils';
+import type { SymbolSuggestion } from '@/types';
+import { GLOBAL_SYMBOL_SELECTED_EVENT } from '@/lib/events';
 
 export default function MarketData() {
-  const [symbols, setSymbols] = useState('AAPL,MSFT,GOOGL');
+  const [symbols, setSymbols] = useState<SymbolSuggestion[]>([
+    { symbol: 'AAPL' },
+    { symbol: 'MSFT' },
+    { symbol: 'GOOGL' },
+  ]);
   const [startDate, setStartDate] = useState(getOffsetDateString(-365));
   const [endDate, setEndDate] = useState(getTodayDateString());
 
-  const { data: ohlcvData, isLoading, error, refetch } = useOHLCV(
-    symbols.split(',').map((s) => s.trim()),
-    startDate,
-    endDate
+  const selectedTickers = useMemo(
+    () => symbols.map((s) => s.ticker ?? s.symbol?.trim().toUpperCase()).filter((s): s is string => Boolean(s)),
+    [symbols]
   );
+
+  const { data: ohlcvData, isLoading, error, refetch } = useOHLCV(selectedTickers, startDate, endDate);
+
+  const handleSymbolChange = (list: string[]) => {
+    setSymbols((prev) => {
+      const normalized = Array.from(new Set(list.map((sym) => sym.trim().toUpperCase()).filter(Boolean)));
+      return normalized.map((symbol) => prev.find((entry) => entry.symbol === symbol) ?? { symbol });
+    });
+  };
 
   const handleFetch = () => {
     try {
-      const symbolList = symbols.split(',').map((s) => s.trim());
+      const symbolList = selectedTickers;
       if (symbolList.length === 0) {
         toast.error('Please enter at least one symbol');
         return;
@@ -36,6 +51,39 @@ export default function MarketData() {
       toast.error('Failed to fetch market data');
     }
   };
+
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<SymbolSuggestion>).detail;
+      if (!detail?.symbol && !detail?.ticker) return;
+      const ticker = (detail.ticker || detail.symbol || '').trim().toUpperCase();
+      if (!ticker) return;
+
+      setSymbols((prev) => {
+        const exists = prev.some((entry) => {
+          const key = (entry.ticker || entry.symbol || '').trim().toUpperCase();
+          return key === ticker;
+        });
+        if (exists) {
+          return prev;
+        }
+        return [
+          ...prev,
+          {
+            symbol: ticker,
+            ticker,
+            name: detail.name,
+            exchange: detail.exchange,
+            sector: detail.sector,
+            score: detail.score,
+          },
+        ];
+      });
+    };
+
+    window.addEventListener(GLOBAL_SYMBOL_SELECTED_EVENT, handler);
+    return () => window.removeEventListener(GLOBAL_SYMBOL_SELECTED_EVENT, handler);
+  }, []);
 
   // Compute correlation matrix from OHLCV data
   const getCorrelationMatrix = () => {
@@ -49,61 +97,60 @@ export default function MarketData() {
       Array.from({ length: size }, (_, j) => (i === j ? 1.0 : 0.5 + Math.random() * 0.3))
     );
   };
-  
+
   const correlationMatrix = getCorrelationMatrix();
 
-  const primarySymbol = symbols.split(',').map((s) => s.trim().toUpperCase())[0];
+  const primarySymbol = selectedTickers[0] || '';
   const seriesBySymbol = ohlcvData?.data ?? {};
   const primarySeries = seriesBySymbol[primarySymbol] ?? [];
 
   // Normalize chart data defensively (avoid undefined / string-number issues)
   const chartData = Array.isArray(primarySeries)
     ? primarySeries
-        .filter(
-          (row) =>
-            row &&
-            row.date &&
-            row.high != null &&
-            row.low != null &&
-            row.open != null &&
-            row.close != null &&
-            !Number.isNaN(Number(row.high)) &&
-            !Number.isNaN(Number(row.low)) &&
-            !Number.isNaN(Number(row.open)) &&
-            !Number.isNaN(Number(row.close))
-        )
-        .map((row) => ({
-          date: String(row.date),
-          open: Number(row.open),
-          high: Number(row.high),
-          low: Number(row.low),
-          close: Number(row.close),
-          volume: row.volume != null ? Number(row.volume) : undefined,
-        }))
-        .sort((a, b) => (a.date > b.date ? 1 : a.date < b.date ? -1 : 0))
+      .filter(
+        (row) =>
+          row &&
+          row.date &&
+          row.high != null &&
+          row.low != null &&
+          row.open != null &&
+          row.close != null &&
+          !Number.isNaN(Number(row.high)) &&
+          !Number.isNaN(Number(row.low)) &&
+          !Number.isNaN(Number(row.open)) &&
+          !Number.isNaN(Number(row.close))
+      )
+      .map((row) => ({
+        date: String(row.date),
+        open: Number(row.open),
+        high: Number(row.high),
+        low: Number(row.low),
+        close: Number(row.close),
+        volume: row.volume != null ? Number(row.volume) : undefined,
+      }))
+      .sort((a, b) => (a.date > b.date ? 1 : a.date < b.date ? -1 : 0))
     : [];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Market Data</h1>
-        <p className="text-muted-foreground">Fetch and visualize historical OHLCV data</p>
+        <h1 className="font-clash text-3xl tracking-[0.030em] font-bold text-slate-900 dark:text-white">Market Data</h1>
+        <p className="text-slate-500 dark:text-slate-400">Fetch and visualize historical OHLCV data</p>
       </div>
 
       {/* Fetch Form */}
       <Card>
         <CardHeader>
-          <CardTitle>Data Fetcher</CardTitle>
+          <CardTitle className='tracking-[0.030em]'>Data Fetcher</CardTitle>
           <CardDescription>Enter symbols and date range</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <Label htmlFor="symbols">Symbols (comma-separated)</Label>
-            <Input
-              id="symbols"
-              value={symbols}
-              onChange={(e) => setSymbols(e.target.value)}
-              placeholder="AAPL,MSFT,GOOGL"
+            <SymbolMultiSelect
+              label="Symbols"
+              value={selectedTickers}
+              onChange={handleSymbolChange}
+              placeholder="Type ticker and press Enter"
             />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -136,13 +183,13 @@ export default function MarketData() {
         <>
           <Card>
             <CardHeader>
-              <CardTitle>OHLCV Chart - {primarySymbol}</CardTitle>
+              <CardTitle className="tracking-[0.030em]">OHLCV Chart - {primarySymbol}</CardTitle>
               <CardDescription>Candlestick chart with volume</CardDescription>
             </CardHeader>
             <CardContent>
               <CandlestickChart data={chartData} height={400} />
               {chartData.length === 0 && (
-                <p className="mt-2 text-xs text-muted-foreground">No cleaned data available for chart.</p>
+                <p className="mt-2 text-xs text-slate-400">No cleaned data available for chart.</p>
               )}
             </CardContent>
           </Card>
@@ -150,16 +197,13 @@ export default function MarketData() {
           {correlationMatrix && (
             <Card>
               <CardHeader>
-                <CardTitle>Correlation Matrix</CardTitle>
+                <CardTitle className="tracking-[0.030em]">Correlation Matrix</CardTitle>
                 <CardDescription>Asset return correlations</CardDescription>
               </CardHeader>
               <CardContent>
                 <Heatmap
                   data={correlationMatrix}
-                  labels={symbols
-                    .split(',')
-                    .map((s) => s.trim().toUpperCase())
-                    .slice(0, correlationMatrix.length)}
+                  labels={selectedTickers.slice(0, correlationMatrix.length)}
                   height={300}
                 />
               </CardContent>
@@ -168,14 +212,14 @@ export default function MarketData() {
 
           <Card>
             <CardHeader>
-              <CardTitle>Data Summary</CardTitle>
+              <CardTitle className="tracking-[0.030em]">Data Summary</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">
                 {Object.entries(seriesBySymbol).map(([symbol, data]) => (
                   <div key={symbol} className="flex justify-between border-b pb-2">
                     <span className="font-medium">{symbol}</span>
-                    <span className="text-muted-foreground">
+                    <span className="text-slate-400">
                       {Array.isArray(data) ? data.length : 0} data points
                     </span>
                   </div>
@@ -187,4 +231,36 @@ export default function MarketData() {
       )}
     </div>
   );
+  useEffect(() => {
+    const handler = (event: Event) => {
+      const detail = (event as CustomEvent<SymbolSuggestion>).detail;
+      if (!detail?.symbol && !detail?.ticker) return;
+      const ticker = (detail.ticker || detail.symbol || '').trim().toUpperCase();
+      if (!ticker) return;
+
+      setSymbols((prev) => {
+        const exists = prev.some((entry) => {
+          const key = (entry.ticker || entry.symbol || '').trim().toUpperCase();
+          return key === ticker;
+        });
+        if (exists) {
+          return prev;
+        }
+        return [
+          ...prev,
+          {
+            symbol: ticker,
+            ticker,
+            name: detail.name,
+            exchange: detail.exchange,
+            sector: detail.sector,
+            score: detail.score,
+          },
+        ];
+      });
+    };
+
+    window.addEventListener(GLOBAL_SYMBOL_SELECTED_EVENT, handler);
+    return () => window.removeEventListener(GLOBAL_SYMBOL_SELECTED_EVENT, handler);
+  }, []);
 }

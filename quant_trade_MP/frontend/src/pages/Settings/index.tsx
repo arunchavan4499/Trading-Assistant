@@ -68,15 +68,15 @@ export default function Settings() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
-        <p className="text-muted-foreground">Manage your account and risk preferences</p>
+        <h1 className="font-clash text-3xl font-bold text-slate-900 dark:text-white tracking-[0.030em]">Settings</h1>
+        <p className="text-slate-500 dark:text-slate-400">Manage your account and risk preferences</p>
       </div>
 
       {/* User Profile */}
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <UserIcon className="h-5 w-5" />
+          <CardTitle className="flex items-center gap-2 tracking-[0.030em]">
+            <UserIcon className="h-5 w-5 " />
             User Profile
           </CardTitle>
           <CardDescription>Update your personal information</CardDescription>
@@ -107,7 +107,7 @@ export default function Settings() {
       {/* Risk Tolerance */}
       <Card>
         <CardHeader>
-          <CardTitle>Risk Tolerance</CardTitle>
+          <CardTitle className="tracking-[0.030em]">Risk Tolerance</CardTitle>
           <CardDescription>Configure your portfolio risk limits</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -120,7 +120,7 @@ export default function Settings() {
               value={formData.drawdown_limit}
               onChange={(e) => setFormData({ ...formData, drawdown_limit: e.target.value })}
             />
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-slate-400 mt-1">
               Portfolio will trigger risk alert when drawdown exceeds this threshold
             </p>
           </div>
@@ -132,7 +132,7 @@ export default function Settings() {
               value={formData.max_assets}
               onChange={(e) => setFormData({ ...formData, max_assets: e.target.value })}
             />
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-slate-400 mt-1">
               Maximum number of assets to hold simultaneously (sparsity constraint)
             </p>
           </div>
@@ -142,36 +142,36 @@ export default function Settings() {
       {/* Portfolio Configuration */}
       <Card>
         <CardHeader>
-          <CardTitle>Default Portfolio Settings</CardTitle>
+          <CardTitle className="tracking-[0.030em]">Default Portfolio Settings</CardTitle>
           <CardDescription>Preset values for portfolio construction</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <Label htmlFor="defaultSparsity">Default Sparsity K</Label>
-            <Input 
-              id="defaultSparsity" 
-              type="number" 
-              value={formData.default_sparsity}
-              onChange={(e) => setFormData({ ...formData, default_sparsity: e.target.value })}
-              min="1"
-            />
-            <p className="text-sm text-muted-foreground mt-1">
-              Maximum number of assets to include in portfolio construction
-            </p>
-          </div>
+            <div>
+              <Label htmlFor="defaultSparsity">Default Sparsity K</Label>
+              <Input
+                id="defaultSparsity"
+                type="number"
+                value={formData.default_sparsity}
+                onChange={(e) => setFormData({ ...formData, default_sparsity: e.target.value })}
+                min="1"
+              />
+              <p className="text-sm text-slate-400 mt-1">
+                Maximum number of assets to include in portfolio construction
+              </p>
+            </div>
             <div>
               <Label htmlFor="defaultMaxWeight">Max Position Size (%)</Label>
-              <Input 
-                id="defaultMaxWeight" 
-                type="number" 
+              <Input
+                id="defaultMaxWeight"
+                type="number"
                 step="0.1"
                 value={formData.max_position_size}
                 onChange={(e) => setFormData({ ...formData, max_position_size: e.target.value })}
                 min="0"
                 max="100"
               />
-              <p className="text-sm text-muted-foreground mt-1">
+              <p className="text-sm text-slate-400 mt-1">
                 Maximum weight per position in portfolio (0-100%)
               </p>
             </div>
@@ -188,12 +188,12 @@ export default function Settings() {
       </div>
 
       {successMessage && (
-        <Card className="border-green-500 bg-green-50 dark:bg-green-950">
+        <Card className="border-green-600/50 bg-green-900/30">
           <CardContent className="pt-6 flex justify-between items-center">
-            <p className="text-green-800 dark:text-green-200">Settings saved successfully!</p>
-            <button 
+            <p className="text-green-200">Settings saved successfully!</p>
+            <button
               onClick={() => setSuccessMessage(false)}
-              className="text-green-600 dark:text-green-400 hover:text-green-800"
+              className="text-green-400 hover:text-green-200"
             >
               <X className="h-4 w-4" />
             </button>

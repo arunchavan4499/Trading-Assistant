@@ -31,6 +31,15 @@ npm run dev
 
 Wait for: `Local: http://localhost:3000/`
 
+### Seed Semantic Search Data
+```powershell
+# Ensure DATABASE_URL points to Postgres with pgvector enabled
+cd scripts
+python seed_ticker_embeddings.py --csv ..\data\reference\tickers_sample.csv --batch-size 64
+```
+
+Wait for: `Inserted/updated N ticker metadata rows`
+
 ### Verify Connection
 Open http://localhost:3000, then in DevTools Console (F12):
 ```javascript

@@ -44,9 +44,13 @@ export const getBacktestStatus = async (jobId: string): Promise<{
   return unwrapApiResponse(response.data);
 };
 
-export const downloadBacktestReport = async (backtestId: number): Promise<Blob> => {
+export const downloadBacktestReport = async (
+  backtestId: number,
+  format: 'json' | 'csv' = 'json'
+): Promise<Blob> => {
   const response = await apiClient.get(`/backtest/download/${backtestId}`, {
     responseType: 'blob',
+    params: { format },
   });
   return response.data;
 };
