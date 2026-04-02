@@ -3,23 +3,16 @@
 # ===========================
 __pycache__/
 *.py[cod]
-*$py.class
 *.pyo
 *.pyd
-*.so
-*.egg
-*.egg-info/
-*.manifest
-*.spec
-MANIFEST
 
 # ===========================
 # Virtual environments
 # ===========================
 .venv/
 venv/
-ENV/
 env/
+ENV/
 
 # ===========================
 # Sensitive config / credentials
@@ -28,30 +21,24 @@ env/
 .env.*
 secret.*
 secrets.json
-config.json
-config.yaml
 *.key
 *.pem
 *.crt
-*.csr
-*.p12
 *.pfx
-*.der
 .credentials
 credentials
-aws/
+.aws/
 .ssh/
+
+# Keep example config
+config.json
+!config.example.json
 
 # ===========================
 # IDE / editor
 # ===========================
 .vscode/
 .idea/
-*.suo
-*.user
-*.sublime-workspace
-*.sublime-project
-*.iml
 
 # ===========================
 # OS artifacts
@@ -61,61 +48,37 @@ Thumbs.db
 desktop.ini
 
 # ===========================
-# Test, coverage, build caches
+# Test / cache / coverage
 # ===========================
 .pytest_cache/
 .coverage
-.coverage.*
-.cache
-nosetests.xml
-coverage.xml
-*.cover
-*.py,cover
-.hypothesis/
-.tox/
 .mypy_cache/
-.pyre/
-.pytype/
-reports/
 
 # ===========================
-# Logs and runtime artifacts
+# Logs
 # ===========================
 *.log
 logs/
-tmp/
-temp/
-celerybeat-schedule
-celerybeat.pid
 
 # ===========================
-# Data / results / output
+# Data / results
 # ===========================
+data/
 results/
 backtest_results/
-data/raw/
-data/processed/
-data/temp/
-data/cache/
-data/backups/
-*.csv
-*.parquet
-*.feather
-*.h5
-*.hdf5
 
 # ===========================
 # Frontend
 # ===========================
 frontend/node_modules/
-frontend/.parcel-cache
 frontend/dist/
-frontend/.env.local
-frontend/.env.*.local
 
 # ===========================
-# SQLite / local db
+# Database
 # ===========================
 app.db
-*.db
-*.db-journal
+
+# ===========================
+# Copilot (ONLY this)
+# ===========================
+.copilot/
