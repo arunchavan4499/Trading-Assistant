@@ -1,6 +1,5 @@
-
-# ===========================
-# 🐍 Python
+﻿# ===========================
+# Python
 # ===========================
 __pycache__/
 *.py[cod]
@@ -10,42 +9,27 @@ __pycache__/
 *.so
 *.egg
 *.egg-info/
-dist/
-build/
-eggs/
-develop-eggs/
-.installed.cfg
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-pip-wheel-metadata/
 *.manifest
 *.spec
 MANIFEST
 
 # ===========================
-# 🧬 Environments (Anaconda / virtualenv)
+# Virtual environments
 # ===========================
-.env
-.env.*
 .venv/
 venv/
 ENV/
 env/
-conda/
-.conda/
-*.conda
-*.ipynb_checkpoints/
-*.sqlite3
 
 # ===========================
-# 🧾 Configuration / Secrets
+# Sensitive config / credentials
 # ===========================
-# Never commit credentials or API keys
+.env
+.env.*
+secret.*
+secrets.json
+config.json
+config.yaml
 *.key
 *.pem
 *.crt
@@ -53,67 +37,31 @@ conda/
 *.p12
 *.pfx
 *.der
-*.db
-*.db-journal
-secret.*
-secrets.json
-config.json
-config.yaml
-*.log
-
-# Pydantic environment files
-.env
-.env.local
-.env.prod
-.env.dev
+.credentials
+credentials
+aws/
+.ssh/
 
 # ===========================
-# 🧠 Jupyter Notebooks
+# IDE / editor
 # ===========================
-.ipynb_checkpoints/
-notebooks/.ipynb_checkpoints/
-
-# ===========================
-# 📊 Data directories
-# ===========================
-data/raw/
-data/processed/
-data/temp/
-data/cache/
-data/backups/
-*.csv
-*.parquet
-*.feather
-*.h5
-*.hdf5
-
-# ===========================
-# 🧰 IDEs and Editors
-# ===========================
-# VS Code
 .vscode/
-# PyCharm / IntelliJ
 .idea/
-# Sublime Text
+*.suo
+*.user
 *.sublime-workspace
 *.sublime-project
-# JetBrains
 *.iml
 
 # ===========================
-# 🧱 Operating System junk
+# OS artifacts
 # ===========================
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 desktop.ini
 
 # ===========================
-# 🧪 Tests and Coverage
+# Test, coverage, build caches
 # ===========================
 .pytest_cache/
 .coverage
@@ -131,7 +79,7 @@ coverage.xml
 reports/
 
 # ===========================
-# 🚀 Deployment / Build Artifacts
+# Logs and runtime artifacts
 # ===========================
 *.log
 logs/
@@ -141,17 +89,23 @@ celerybeat-schedule
 celerybeat.pid
 
 # ===========================
-# 📈 Generated Results & Backtest Data
+# Data / results / output
 # ===========================
 results/
 backtest_results/
-*.equity.csv
-equity_*.csv
-trades_*.csv
-backtest_report.json
+data/raw/
+data/processed/
+data/temp/
+data/cache/
+data/backups/
+*.csv
+*.parquet
+*.feather
+*.h5
+*.hdf5
 
 # ===========================
-# 📦 Frontend Dependencies & Build
+# Frontend
 # ===========================
 frontend/node_modules/
 frontend/.parcel-cache
@@ -160,21 +114,8 @@ frontend/.env.local
 frontend/.env.*.local
 
 # ===========================
-# 💾 Database & Generated Files
+# SQLite / local db
 # ===========================
 app.db
-
-# ===========================
-# 🔑 Additional Security Patterns
-# ===========================
-.aws/
-.ssh/
-*.p12
-*.pfx
-*.jks
-keystore
-.keystore
-credentials
-.credentials
-oauth.json
-service-account-key.json
+*.db
+*.db-journal
