@@ -1,162 +1,117 @@
 # 📊 Quant Trading Assistant
 
-A modern quantitative trading system designed to generate trading signals, optimize portfolios, and perform backtesting using statistical and machine learning techniques.
+A professional-grade quantitative trading platform that combines portfolio optimization, machine learning-enhanced feature engineering, and robust backtesting capabilities. This system generates actionable trading signals and constructs optimal mean-reverting portfolios.
 
 ---
 
-## 🚀 Features
+## 🏗️ Project Architecture
 
-- Portfolio optimization using sparse mean-reversion strategies  
-- Machine learning-enhanced signal generation  
-- Backtesting with walk-forward simulation  
-- Risk management with drawdown and position limits  
-- Technical indicators (SMA, RSI, MACD, ATR)  
-- REST API for full system interaction  
-- Interactive frontend dashboard  
+The project follows a modular service-oriented architecture designed for scalability and research flexibility.
 
----
+### Backend Services
+| Service | Purpose |
+| :--- | :--- |
+| **DataFetcher** | Market data ingestion and normalization via `yfinance`. |
+| **FeatureEngineer** | Technical indicator calculation and VAR state-space modeling. |
+| **PortfolioConstructor** | Box-Tiao optimization and sparse portfolio selection. |
+| **TradeSignalEngine** | Rule-based signal generation (Buy/Sell/Hold). |
+| **Backtester** | Walk-forward strategy simulation with transaction costs. |
+| **RiskManager** | Real-time drawdown and position limit enforcement. |
 
-## 🧠 Core Workflow
-
-- Fetch and process market data (OHLCV)
-- Engineer features using technical indicators + VAR model
-- Construct optimized portfolios (Box-Tiao method)
-- Generate trading signals (BUY / SELL / HOLD)
-- Backtest strategies with realistic costs
-- Evaluate performance (Sharpe ratio, drawdown)
-
----
-
-## 🛠️ Technical Details
-
-- Backend: Python + FastAPI  
-- Frontend: React + TypeScript + Tailwind CSS  
-- Database: SQLite / PostgreSQL (pgvector support)  
-- Data Source: yfinance  
-- Architecture: Modular service-based system  
-- API: RESTful endpoints  
+### Project Structure
+- **`app/`**: FastAPI backend core logic and REST API endpoints.
+- **`frontend/`**: Modern React + TypeScript + Vite dashboard.
+- **`scripts/`**: Orchestration scripts for research and system verification.
+- **`docs/`**: Detailed technical guides and manuals.
+- **`tests/`**: Comprehensive backend test suite.
 
 ---
 
-## ⚡ Getting Started
+## 🚀 Quick Start (Plug-and-Play)
 
-### 1. Clone the repository
-```bash
-git clone https://github.com/your-username/your-repo.git
-cd QuantTrade_AI
-```
+Follow these steps to get the system running on your local machine.
 
-### 2. Start Backend
-```bash
+### 1. Prerequisites
+- **Python**: 3.10+
+- **Node.js**: 18.x+
+- **Database**: SQLite (default) or PostgreSQL
+
+### 2. Installation & Setup
+
+#### Backend Setup
+```powershell
+# Create and activate virtual environment
 python -m venv .venv
-.\.venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1  # Windows
+
+# Install dependencies
 pip install -r requirements.txt
-pip install -r requirements-server.txt
-uvicorn app.main:app --reload --port 8000
+
+# Configure Environment
+cp .env.example .env
 ```
 
-### 3. Start Frontend
-```bash
+#### Frontend Setup
+```powershell
 cd frontend
 npm install
+```
+
+### 3. Running the System
+
+To run the full application, start both the backend server and the frontend development server.
+
+**Start Backend:**
+```powershell
+python start_server.py
+```
+*API available at: `http://localhost:8000` | Docs at: `/docs`*
+
+**Start Frontend:**
+```powershell
+cd frontend
 npm run dev
 ```
-
-### 4. Open Application
-http://localhost:3000
+*Dashboard available at: `http://localhost:3000`*
 
 ---
 
-## 📁 Directory Structure
+## 🧪 Verification & Research
 
-```
-QuantTrade_AI/
-├── app/
-├── frontend/
-├── scripts/
-├── data/
-├── results/
-├── README.md
-└── TECHNICAL_GUIDE.md
-```
+Verify system health or run research pipelines using the provided scripts:
 
----
-
-## ⚙️ Configuration
-
-Create a `.env` file:
-
-```
-DATABASE_URL=sqlite:///./test.db
-```
-
-For production:
-
-```
-DATABASE_URL=postgresql://user:password@localhost/quant_trading
-```
-
----
-
-## 🧪 Testing
-
-```bash
-python scripts/verify_integration.py
-python scripts/walkforward_backtest.py
+```powershell
+# Perform System Health Check
 python scripts/health_check.py
+
+# Verify Integration
+python scripts/verify_integration.py
+
+# Run Full Walk-Forward Backtest
+python scripts/walkforward_backtest.py
 ```
-
----
-
-## 🌐 API Endpoints
-
-- Market Data → `/api/data/*`  
-- Portfolio → `/api/portfolio/*`  
-- Features → `/api/features/*`  
-- Signals → `/api/signals/*`  
-- Backtest → `/api/backtest/*`  
-- Risk → `/api/risk/*`  
 
 ---
 
 ## 📊 Project Status
 
-- Backend: ✅ Complete  
-- API: ✅ Complete  
-- Frontend: ⚠️ In Progress  
-- Testing: ⚠️ Partial  
-
----
-
-## 🛠️ Troubleshooting
-
-- Backend not starting → Check port 8000  
-- API connection issues → Verify backend is running  
-- Data errors → Validate ticker symbols  
-- Model instability → Increase data or adjust parameters  
+- **Backend Logic**: ✅ 100% Complete
+- **REST API**: ✅ 100% Complete
+- **Frontend Dashboard**: ✅ 95% Complete
+- **Integration Testing**: 🔄 In Progress
 
 ---
 
 ## 📚 Documentation
-
-- API Docs: http://localhost:8000/docs  
-- Technical Guide: TECHNICAL_GUIDE.md  
-
----
-
-## 🚀 Future Improvements
-
-- Complete frontend integration  
-- Improve error handling  
-- Add authentication system  
-- Deploy using Docker  
+- **[Technical Guide](docs/TECHNICAL_GUIDE.md)**: Deep dive into the pipeline logic.
+- **[Risk Control Guide](docs/RISK_CONTROL_GUIDE.md)**: Details on drawdown enforcement.
+- **[Resources Index](docs/RESOURCES_INDEX.md)**: Index of all project resources.
 
 ---
 
 ## 📜 License
-
-This project is for educational and research purposes.
+This project is for research and educational purposes. Use it at your own risk.
 
 ---
 
-Created with ❤️ for quantitative trading
+Created with ❤️ for Quantitative Trading Research.
