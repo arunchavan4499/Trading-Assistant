@@ -1,12 +1,14 @@
 import sys
-import os
+from pathlib import Path
+
 from dotenv import load_dotenv
 
 # Add the project root to the python path
-sys.path.append(os.getcwd())
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.append(str(PROJECT_ROOT))
 
-# Load .env from quant_trade_MP/.env
-load_dotenv(os.path.join(os.getcwd(), 'quant_trade_MP', '.env'))
+# Load .env from the project root
+load_dotenv(PROJECT_ROOT / '.env')
 
 from app.services.semantic_search import SemanticSymbolSearchService
 

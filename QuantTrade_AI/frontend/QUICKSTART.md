@@ -11,7 +11,7 @@
 ### 1. Navigate to Frontend Directory
 
 ```powershell
-cd c:\Users\ARUN\OneDrive\Desktop\MP\quant_trade_MP\frontend
+cd a:\WD Projecs\Trading_Assistant\QuantTrade_AI\frontend
 ```
 
 ### 2. Install Dependencies
@@ -67,7 +67,7 @@ The frontend expects the backend API to be running on port 8000. Verify backend 
 
 ```powershell
 # In a separate terminal, navigate to project root
-cd c:\Users\ARUN\OneDrive\Desktop\MP\quant_trade_MP
+cd a:\WD Projecs\Trading_Assistant\QuantTrade_AI
 
 # Run health check
 python scripts/health_check.py

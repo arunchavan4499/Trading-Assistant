@@ -43,7 +43,7 @@ A modern quantitative trading system designed to generate trading signals, optim
 ### 1. Clone the repository
 ```bash
 git clone https://github.com/your-username/your-repo.git
-cd quant_trade_MP
+cd QuantTrade_AI
 ```
 
 ### 2. Start Backend
@@ -70,7 +70,7 @@ http://localhost:3000
 ## 📁 Directory Structure
 
 ```
-quant_trade_MP/
+QuantTrade_AI/
 ├── app/
 ├── frontend/
 ├── scripts/

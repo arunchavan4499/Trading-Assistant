@@ -227,7 +227,7 @@ All pages use React Query custom hooks from `useApi.ts`:
 
 ### 1. Install Dependencies
 ```powershell
-cd c:\Users\ARUN\OneDrive\Desktop\MP\quant_trade_MP\frontend
+cd a:\WD Projecs\Trading_Assistant\QuantTrade_AI\frontend
 npm install
 ```
 
@@ -240,7 +240,7 @@ npm run dev
 ### 3. Verify Backend Connection
 Ensure backend is running on port 8000:
 ```powershell
-cd c:\Users\ARUN\OneDrive\Desktop\MP\quant_trade_MP
+cd a:\WD Projecs\Trading_Assistant\QuantTrade_AI
 python scripts/health_check.py
 ```
 

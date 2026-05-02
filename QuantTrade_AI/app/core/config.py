@@ -3,7 +3,7 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database (no hard-coded password here; use .env)
-    DATABASE_URL: str
+    DATABASE_URL: str = "sqlite:///./data/app.db"
 
     # API
     API_V1_PREFIX: str = "/api/v1"

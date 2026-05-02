@@ -8,7 +8,7 @@
 
 ## 📚 Documentation Files
 
-All files are in the project root directory (`a:\MP\quant_trade_MP\`)
+All files are in the project root directory (`a:\WD Projecs\Trading_Assistant\QuantTrade_AI\`)
 
 ### 1. **QUICK_REFERENCE_CARD.md** ⭐ START HERE
 - **Read Time**: 2 minutes

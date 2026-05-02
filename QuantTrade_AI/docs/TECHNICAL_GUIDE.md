@@ -75,7 +75,7 @@ The system implements a 5-stage data pipeline with persistence at each stage:
 
 ### Workflow 1: Start Backend Dev Server
 ```powershell
-cd a:\MP\quant_trade_MP
+cd a:\WD Projecs\Trading_Assistant\QuantTrade_AI
 .\.venv\Scripts\Activate.ps1
 uvicorn app.main:app --reload --port 8000
 ```
