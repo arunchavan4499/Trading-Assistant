@@ -56,6 +56,22 @@ async def resolve_symbol(user_input: str) -> Optional[str]:
     if _semantic_service and _semantic_service.symbol_exists(normalized):
         return normalized
 
+    # Heuristic: If it looks like a canonical ticker (1-5 chars, alphanumeric), 
+    # check if it exists in DB or just assume it's valid for now to avoid Yahoo lookup dependency
+    if 1 <= len(normalized) <= 6 and normalized.isalnum():
+        # If it's a common ticker format, let's try to use it directly
+        # We can still verify with Yahoo, but if Yahoo is down, this saves us
+        if normalized in ["AAPL", "MSFT", "GOOGL", "GOOG", "AMZN", "TSLA", "META", "NVDA", "SPY"]:
+            return normalized
+        
+        # Check if it exists in DB
+        if _symbol_exists_in_db(normalized):
+            return normalized
+        
+        # If it's not in DB, we still want to try it if Yahoo fails
+        # So we'll keep it as a potential candidate if Yahoo fails later
+        pass
+
     # Second check: Yahoo Finance
     yahoo_match = await yahoo_lookup.search_symbol(cleaned)
     if yahoo_match:

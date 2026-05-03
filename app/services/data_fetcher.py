@@ -233,9 +233,18 @@ class DataFetcher:
         with engine.begin() as conn:
             for i in range(0, len(rows), self.batch_size):
                 batch = rows[i:i + self.batch_size]
-                stmt = pg_insert(market_table).values(batch)
-                stmt = stmt.on_conflict_do_nothing(index_elements=['symbol', 'date'])
-                conn.execute(stmt)
+                if engine.name == 'postgresql':
+                    # PostgreSQL specific Upsert
+                    stmt = pg_insert(market_table).values(batch)
+                    stmt = stmt.on_conflict_do_nothing(index_elements=['symbol', 'date'])
+                    conn.execute(stmt)
+                else:
+                    # SQLite/Generic fallback
+                    # Note: engine.name for sqlite is 'sqlite'
+                    for row in batch:
+                        # Use SQLite 'OR IGNORE' pattern
+                        stmt = market_table.insert().prefix_with("OR IGNORE").values(**row)
+                        conn.execute(stmt)
 
     def load_from_db(self, symbols: List[str], start: str, end: str) -> Dict[str, pd.DataFrame]:
         """Load market_data into DataFrames (index tz-aware UTC)."""
